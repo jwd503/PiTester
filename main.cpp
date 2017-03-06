@@ -122,20 +122,52 @@ int runDynamicTest(int readmask){
 				printf("sampleIndex: %d\n", sampleIndex);
 				std::ofstream myfile;
 				myfile.open("sampleLog.txt");
+				int lastSeenPinAt[32] = {0};
 				int flag = 0;
 				for (int sampleIndex = 0; sampleIndex < 10000; sampleIndex++){
 					if (sample[sampleIndex] != 0) {
 						myfile << sampleIndex << ": ";
 						for(int pin = 2; pin < 28; pin++){
 							if( 1<< pin & sample[sampleIndex]){
-								myfile << " " << pin;
+								int sampleFlag = 0;
+								myfile << "\t\t" << pin;
+								if (sampleIndex > 0){
+									double hz = 0;
+									int difference = 0;
+									if((1<< pin & sample[sampleIndex -1]) == 0){
+										if(lastSeenPinAt[pin] != 0){
+											difference = ((sampleIndex - lastSeenPinAt[pin]) * 100);
+											if(difference != 0){
+												hz = 1/(difference/1000000.0);
+											}
+										}
+										lastSeenPinAt[pin] = sampleIndex;
+										myfile << " " << difference  << "us elapsed  aprox hz:" << hz << "\n";
+										sampleFlag = 1;
+
+									}else if(sampleIndex < 9999){
+										if((1 << pin & sample[sampleIndex]) == 0){
+											if(lastSeenPinAt[pin] != 0){
+												difference = ((sampleIndex - lastSeenPinAt[pin]) * 100);
+												if( difference != 0){
+													hz = 1/(difference/1000000.0);
+												}
+											}
+
+											myfile << " " << difference  << "us elapsed  aprox hz:" << hz << "\n";
+											sampleFlag = 1;
+											lastSeenPinAt[pin] = sampleIndex;
+										}
+									}
+								}
+								if (sampleFlag == 0) myfile << "\n";
 							}
 						}
 						myfile << "\n";
 						flag = 0;
 					}else{
 						if(flag == 0){
-							myfile << "\n";
+							myfile << "=========================================================================\n";
 							flag = 1;
 						}
 					}
