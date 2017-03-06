@@ -42,7 +42,7 @@ int Motor::updateLastFired(int firedIndex){
 		lastFiredCount++;
 	}else {
 		lastFiredIndex = firedIndex;
-		lastFiredCount = 0;
+		lastFiredCount = 1;
 	}
 }
 
@@ -53,8 +53,6 @@ int Motor::updateCoils(int gpioReading){
 	int errorFlag = 0;
 	//Both states changed since last reading, given that we are sampling at ~10kHz probably something wrong
 	if ((coilStateChanged[0] == coilStateChanged[1]) && (coilStateChanged[0] == 1)){
-//		printf("state1: %d, state2: %d\n",coilTracker[0].getCoil()->getCoilState(), coilTracker[1].getCoil()->getCoilState());
-//		printf("Both coils have updated at the same time probably something wrong with Motor, state1: %d, state2:%d\n", coilStateChanged[0], coilStateChanged[1]);
 		int coilState[2] = {0};
 		coilState[0] = coilTracker[0].getCoil()->getCoilState();
 		coilState[1] = coilTracker[1].getCoil()->getCoilState();
@@ -67,31 +65,31 @@ int Motor::updateCoils(int gpioReading){
 			e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_TO_COIL));
 			errorFlag = 4;
 		}
-//		printf("SameFireCount: %d for Motor with coils, %s and %s\n", sameFireCount, coilTracker[0].getCoil()->name.c_str(), coilTracker[1].getCoil()->name.c_str());
 	}else if(coilStateChanged[0] == 1){ //coil1 state changed
-//		printf("Coil:%s states, state1: %d, state2:%d\n", coilTracker[1].getCoil()->name.c_str(),coilTracker[0].getCoil()->getCoilState(), coilTracker[1].getCoil()->getCoilState());
 
 		updateLastFired(0);
-//		checkLastFired(1);
+
 		int coilStatus = checkLastFired(0);
 		if(coilStatus != 0){
-//			e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
-//			printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
-//			lastFiredCount = 0;
+
 			if(lastErrorFlag == 1){
 				errorCount++;
 			}else{
 				lastErrorFlag = 1;
-				errorCount = 0;
+				errorCount = lastFiredCount;
 			}
-			if(errorCount >= 4){
+			if(errorCount >= 9){
 				errorFlag = 1;
 				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
 				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
 			}
-		}//else{
-		//	errorCount = 0;
-		//}
+		}else{
+			//reset error flag
+			lastErrorFlag = 0;
+//			if(lastErrorFlag == 1){
+//				errorCount = 0;
+//			}
+		}
 		sameFireCount = 0;
 	}else if(coilStateChanged[1] == 1){ //coil2 state changed
 //		printf("Coil:%s states, state1: %d, state2:%d\n", coilTracker[1].getCoil()->name.c_str(), coilTracker[0].getCoil()->getCoilState(), coilTracker[1].getCoil()->getCoilState());
@@ -107,13 +105,19 @@ int Motor::updateCoils(int gpioReading){
 				errorCount++;
 			}else{
 				lastErrorFlag = 2;
-				errorCount = 0;
+				errorCount = lastFiredCount;
 			}
-			if(errorCount >= 4){
+			if(errorCount >= 9 ){
 				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
 				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 				errorFlag = 2;
 			}
+		}else{
+			//reset error flag
+			lastErrorFlag = 0;
+//			if(lastErrorFlag == 2){
+//				errorCount = 0;
+//			}
 		}
 
 		//	errorCount = 0;

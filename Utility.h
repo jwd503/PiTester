@@ -84,7 +84,7 @@ int bitwiseAverageArray(int array[], int size){
 		}
 	}
 	for(bit = 0; bit < 32; bit++){
-		result |= ((count[bit] > ((size*1)/ 4)) ?1:0) << bit;
+		result |= ((count[bit] > ((size*2)/ 4)) ?1:0) << bit;
 	}
 	return result;
 }

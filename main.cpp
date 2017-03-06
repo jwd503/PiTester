@@ -15,7 +15,7 @@
 
 
 #define ZEROES_SEEN 19
-
+#define NREADS 32
 void takeReadings(int nReads, int ReadResult[], int readmask);
 int printReadings(int nReads, int ReadResult[]);
 int* pinsToMask(int* outputPins, int* readPins, int* result);
@@ -79,7 +79,7 @@ int main()
 int runDynamicTest(int readmask){
 	int sample[10000] = {0};
 	int sampleIndex = 0;
-
+	int dynamicReads = 1; //NREADS
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
@@ -92,17 +92,17 @@ int runDynamicTest(int readmask){
 
 	while(1)
 	{
-		int readResult[NREADS] = {0};
+		int readResult[1] = {0};
 		delayMicroseconds(100);
 
-		takeReadings(NREADS, readResult, readmask);
+		takeReadings(dynamicReads, readResult, readmask);
 
-		READ_OK = printReadings(NREADS, readResult);
-		if (READ_OK != 1){
-			continue;
-		}
+		//READ_OK = printReadings(NREADS, readResult);
+		//if (READ_OK != 1){
+		//	continue;
+		//}
 
-		sample[sampleIndex] = bitwiseAverageArray(readResult, NREADS);
+		sample[sampleIndex] = bitwiseAverageArray(readResult, dynamicReads);
 
 		int motorIndex = 0;
 		int errorFlag = 0;
@@ -125,7 +125,13 @@ int runDynamicTest(int readmask){
 				int flag = 0;
 				for (int sampleIndex = 0; sampleIndex < 10000; sampleIndex++){
 					if (sample[sampleIndex] != 0) {
-						myfile << sampleIndex << ": " << sample[sampleIndex] << "\n";
+						myfile << sampleIndex << ": ";
+						for(int pin = 2; pin < 28; pin++){
+							if( 1<< pin & sample[sampleIndex]){
+								myfile << " " << pin;
+							}
+						}
+						myfile << "\n";
 						flag = 0;
 					}else{
 						if(flag == 0){

@@ -1,6 +1,8 @@
 #ifndef TESTCASE_H
 #define TESTCASE_H
-#define NREADS 32
+#ifndef NREADS
+	#define NREADS 32
+#endif
 class TestCase{
 	private:
 		int expectedResult;
