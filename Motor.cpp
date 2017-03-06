@@ -78,7 +78,7 @@ int Motor::updateCoils(int gpioReading){
 				lastErrorFlag = 1;
 				errorCount = lastFiredCount;
 			}
-			if(errorCount >= 9){
+			if(errorCount >= 4){
 				errorFlag = 1;
 				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
 				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
@@ -107,7 +107,7 @@ int Motor::updateCoils(int gpioReading){
 				lastErrorFlag = 2;
 				errorCount = lastFiredCount;
 			}
-			if(errorCount >= 9 ){
+			if(errorCount >= 4 ){
 				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
 				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 				errorFlag = 2;
