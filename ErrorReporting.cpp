@@ -2,7 +2,9 @@
 #include <string>
 #include <stdio.h>
 
-ErrorReporting::ErrorReporting(){
+ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
+	sample = samplePointer;
+	sampleIndex = sampleIndexPointer;
 	int errorIndex = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 		errorCodes[errorIndex] = 0;
@@ -31,6 +33,7 @@ void ErrorReporting::setNextErrorCode(int errorCode){
 		}
 	}
 	errorCodes[currentErrorCodeIndex] = errorCode;
+	setGpioHistory(currentErrorCodeIndex);
 	incrementErrorCodeIndex();
 }
 
@@ -297,3 +300,26 @@ std::string ErrorReporting::getMotorName(int location){
 	return "Motor: " + result;
 }
 
+void ErrorReporting::setGpioHistory(int errorID){
+	int &sampleRef = *sample;
+	int &sampleIndexRef = *sampleIndex;
+	int gpioHistoryIndex = 0;
+	for(gpioHistoryIndex = HISTORY_ITEMS - 1; gpioHistoryIndex >= 0; gpioHistoryIndex--){
+		if(sampleIndex - gpioHistoryIndex >= 0){
+			gpioHistory[(errorID * HISTORY_ITEMS) + gpioHistoryIndex] = sample[(sampleIndexRef - gpioHistoryIndex)];
+		}else{
+			 gpioHistory[(errorID * HISTORY_ITEMS) + gpioHistoryIndex] = 0x3;
+		}
+	}
+}
+
+void ErrorReporting::printGpioHistory(int errorID){
+	for(int gpioHistoryIndex = 0; gpioHistoryIndex < HISTORY_ITEMS; gpioHistoryIndex++){
+		printf("GpioHistory[%d]: %d\n", (errorID * HISTORY_ITEMS) + gpioHistoryIndex,gpioHistory[(errorID*HISTORY_ITEMS)+gpioHistoryIndex]);
+	}
+
+}
+
+int ErrorReporting::getCurrentErrorCodeIndex(){
+	return currentErrorCodeIndex;
+}

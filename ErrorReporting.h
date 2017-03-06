@@ -3,6 +3,7 @@
 
 #include <string>
 #define MAX_ERROR_CODES 32
+#define HISTORY_ITEMS 50
 
 #define NONE 0
 //TestType Constants
@@ -35,15 +36,20 @@ class ErrorReporting{
 	private:
 		int errorCodes[MAX_ERROR_CODES];
 		std::string errorMessage[MAX_ERROR_CODES];
+		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
+
 		static int availableCodes[32];
 		static std::string availableMessages[32];
 
 		void setupErrorMapping();
 		int currentErrorCodeIndex;
 		void incrementErrorCodeIndex();
+		int* sample;
+		int* sampleIndex;
 	public:
-		ErrorReporting();
+		ErrorReporting(int* samplePointer, int* sampleIndexPointer);
 		int getErrorCode(int errorIndex);
+		int getCurrentErrorCodeIndex();
 		void  setNextErrorCode(int errorCode);
 		int findErrorCode(int errorCode);
 		std::string getErrorMessage(int  errorIndex);
@@ -57,7 +63,8 @@ class ErrorReporting{
 		std::string getCoilTerminalName(int location);
 		std::string getCoilName(int location);
 		void setErrorCode(int errorCodeI, int errorCode);
-
+		void setGpioHistory(int errorID);
+		void printGpioHistory(int errorID);
 };
 
 #endif

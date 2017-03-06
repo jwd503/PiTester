@@ -3,6 +3,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <fstream>
+#include <iostream>
 #include "TestCase.h"
 #include "Coil.h"
 #include "Motor.h"
@@ -75,12 +77,13 @@ int main()
 
 }
 int runDynamicTest(int readmask){
-	ErrorReporting e = ErrorReporting();
+	int sample[10000] = {0};
+	int sampleIndex = 0;
+
+	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
 
-	int sample[10000] = {0};
-	int sampleIndex = 0;
 
 	int exitCondition = 0;
 	int exitRead = 0;
@@ -116,6 +119,22 @@ int runDynamicTest(int readmask){
 		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
+				printf("sampleIndex: %d\n", sampleIndex);
+				std::ofstream myfile;
+				myfile.open("sampleLog.txt");
+				int flag = 0;
+				for (int sampleIndex = 0; sampleIndex < 10000; sampleIndex++){
+					if (sample[sampleIndex] != 0) {
+						myfile << sampleIndex << ": " << sample[sampleIndex] << "\n";
+						flag = 0;
+					}else{
+						if(flag == 0){
+							myfile << "\n";
+							flag = 1;
+						}
+					}
+				}
+				e.printGpioHistory(errorIndex);//index is auto incremented
 				printf(e.generateErrorMessage(errorCode).c_str());
 				printf("\nerrorCode: %x\n",errorCode);
 				e.setErrorCode(errorIndex, 0);
@@ -141,10 +160,13 @@ int runDynamicTest(int readmask){
 }
 
 int runStaticTest(){
+	int sample[10000] = {0};
+        int sampleIndex = 0;
+
 	std::vector<TestCase> t;
 	t.reserve(7);
 
-	ErrorReporting e = ErrorReporting();
+	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
 	std::vector<Coil> *coils = configureCoils(&e);
