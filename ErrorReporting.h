@@ -35,13 +35,8 @@
 class ErrorReporting{
 	private:
 		int errorCodes[MAX_ERROR_CODES];
-		std::string errorMessage[MAX_ERROR_CODES];
 		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
 
-		static int availableCodes[32];
-		static std::string availableMessages[32];
-
-		void setupErrorMapping();
 		int currentErrorCodeIndex;
 		void incrementErrorCodeIndex();
 		int* sample;
@@ -52,9 +47,6 @@ class ErrorReporting{
 		int getCurrentErrorCodeIndex();
 		void  setNextErrorCode(int errorCode);
 		int findErrorCode(int errorCode);
-		std::string getErrorMessage(int  errorIndex);
-		void setErrorMessage(std::string message, int errorIndex);
-		std::string lookupErrorCode(int errorCode);
 		int generateErrorCode(int testType, int problemDetail, int location, int problemType);
 		std::string generateErrorMessage(int errorCode);
 
@@ -62,6 +54,7 @@ class ErrorReporting{
 		std::string getPinName(int location);
 		std::string getCoilTerminalName(int location);
 		std::string getCoilName(int location);
+
 		void setErrorCode(int errorCodeI, int errorCode);
 		void setGpioHistory(int errorID);
 		void printGpioHistory(int errorID);

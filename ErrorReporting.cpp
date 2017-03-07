@@ -8,9 +8,7 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
 	int errorIndex = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 		errorCodes[errorIndex] = 0;
-		errorMessage[errorIndex] = "";
 	}
-	setupErrorMapping();
 	currentErrorCodeIndex = 0;
 };
 
@@ -57,64 +55,6 @@ int ErrorReporting::findErrorCode(int errorCode){
 		errorIndex = -1;
 	}
 	return errorIndex;
-}
-
-void ErrorReporting::setErrorMessage(std::string message, int errorIndex){
-	errorMessage[errorIndex] = message;
-}
-
-void ErrorReporting::setupErrorMapping(){
-	int testType[16];
-	testType[0] = 0x0; //No error
-	testType[1] = 0x1; //Static
-	testType[2] = 0x2; //Dynamic
-
-	int problemDetail[16];
-	problemDetail[0] = 0x0; //No detail
-	problemDetail[1] = 0x1; //pin level
-	problemDetail[2] = 0x2; //coil terminal level
-	problemDetail[3] = 0x3; //coil level
-	problemDetail[4] = 0x4; //motor level
-
-	int location[32];
-	location[0] = 0x00; //pin 0	/ M0.A0	/ M0.A	/ M0
-	location[1] = 0x01; //pin 1	/ M0.A1	/ M0.B	/ M1
-	location[2] = 0x02; //pin 2	/ M0.B0	/ M1.A	/ M2
-	location[3] = 0x03; //pin 3	/ M0.B1	/ M1.B	/ M3
-	location[4] = 0x04; //pin 4	/ M1.A0	/ M2.A
-	location[5] = 0x05; //pin 5	/ M1.A1	/ M2.B
-	location[6] = 0x06; //pin 6	/ M1.B0	/ M3.A
-	location[7] = 0x07; //pin 7	/ M1.B1	/ M3.B
-	location[8] = 0x08; //pin 8	/ M2.A0	/
-	location[9] = 0x09; //pin 9	/ M2.A1	/
-	location[10] = 0x0A; //pin 10	/ M2.B0	/
-	location[11] = 0x0B; //pin 11	/ M2.B1	/
-	location[12] = 0x0C; //pin 12	/ M3.A0	/
-	location[13] = 0x0D; //pin 13	/ M3.A1	/
-	location[14] = 0x0E; //pin 14	/ M3.B0	/
-	location[15] = 0x0F; //pin 15	/ M3.B1	/
-	location[16] = 0x10; //pin 16
-	location[17] = 0x11; //pin 17
-	location[18] = 0x12; //pin 18
-	location[19] = 0x13; //pin 19
-	location[20] = 0x14; //pin 20
-	location[21] = 0x15; //pin 21
-	location[22] = 0x16; //pin 22
-	location[23] = 0x17; //pin 23
-	location[24] = 0x18; //pin 24
-	location[25] = 0x19; //pin 25
-	location[26] = 0x1A; //pin 26
-	location[27] = 0x1B; //pin 27
-
-	int problemType[32];
-	problemType[0] = 0x0; //No problemn
-	problemType[1] = 0x1; //Electrical short
-	problemType[2] = 0x2; //Missing Component
-	problemType[3] = 0x3; //
-
-	//availableCodes[0] = 0x0;
-	//availableMessages[0] = "No Error";
-
 }
 
 int ErrorReporting::generateErrorCode(int testType, int problemDetail, int location, int problemType){
