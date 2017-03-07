@@ -172,7 +172,7 @@ int runDynamicTest(int readmask){
 						}
 					}
 				}
-				e.printGpioHistory(errorIndex);//index is auto incremented
+				//e.printGpioHistory(errorIndex);//index is auto incremented
 				printf(e.generateErrorMessage(errorCode).c_str());
 				printf("\nerrorCode: %x\n",errorCode);
 				e.setErrorCode(errorIndex, 0);

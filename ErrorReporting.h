@@ -1,7 +1,9 @@
 #ifndef ERRORREPORTING_H
 #define ERRORREPORTING_H
 
+#include "ErrorInfo.h"
 #include <string>
+
 #define MAX_ERROR_CODES 32
 #define HISTORY_ITEMS 50
 
@@ -36,6 +38,7 @@ class ErrorReporting{
 	private:
 		int errorCodes[MAX_ERROR_CODES];
 		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
+		std::vector<ErrorInfo*> errorVec;
 
 		int currentErrorCodeIndex;
 		void incrementErrorCodeIndex();

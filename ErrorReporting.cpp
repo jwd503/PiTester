@@ -5,6 +5,7 @@
 ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
 	sample = samplePointer;
 	sampleIndex = sampleIndexPointer;
+	errorVec.reserve(MAX_ERROR_CODES);
 	int errorIndex = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 		errorCodes[errorIndex] = 0;
@@ -33,6 +34,7 @@ void ErrorReporting::setNextErrorCode(int errorCode){
 	errorCodes[currentErrorCodeIndex] = errorCode;
 	setGpioHistory(currentErrorCodeIndex);
 	incrementErrorCodeIndex();
+	errorVec[currentErrorCodeIndex] = new ErrorInfo(sample, *sampleIndex, errorCode);
 }
 
 void ErrorReporting::incrementErrorCodeIndex(){
