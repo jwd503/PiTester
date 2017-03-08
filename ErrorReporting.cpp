@@ -9,6 +9,7 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
 	int errorIndex = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 		errorCodes[errorIndex] = 0;
+		errorVec[errorIndex] = 0;
 	}
 	currentErrorCodeIndex = 0;
 };
@@ -25,12 +26,12 @@ void ErrorReporting::setErrorCode(int errorCodeI, int errorCode){
 }
 
 void ErrorReporting::setNextErrorCode(int errorCode){
-	int errorCodeIndex = 0;
-	for(errorCodeIndex= 0; errorCodeIndex < MAX_ERROR_CODES; errorCodeIndex++){
-		if (errorCodes[errorCodeIndex] == errorCode){
-			return;
-		}
-	}
+	//int errorCodeIndex = 0;
+	//for(errorCodeIndex= 0; errorCodeIndex < MAX_ERROR_CODES; errorCodeIndex++){
+	//	if (errorCodes[errorCodeIndex] == errorCode){
+	//		return;
+	//	}
+	//}
 	errorCodes[currentErrorCodeIndex] = errorCode;
 	setGpioHistory(currentErrorCodeIndex);
 	incrementErrorCodeIndex();

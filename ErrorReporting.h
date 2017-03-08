@@ -38,7 +38,6 @@ class ErrorReporting{
 	private:
 		int errorCodes[MAX_ERROR_CODES];
 		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
-		std::vector<ErrorInfo*> errorVec;
 
 		int currentErrorCodeIndex;
 		void incrementErrorCodeIndex();
@@ -61,6 +60,8 @@ class ErrorReporting{
 		void setErrorCode(int errorCodeI, int errorCode);
 		void setGpioHistory(int errorID);
 		void printGpioHistory(int errorID);
+		std::vector<ErrorInfo*> errorVec;
+
 };
 
 #endif
