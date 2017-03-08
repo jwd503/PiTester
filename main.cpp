@@ -382,13 +382,14 @@ int runStaticTest(){
 }
 
 void takeReadings(int nReads, int ReadResult[], int readmask){
-	GPIO_SET = 1<<6;
+
+//	GPIO_SET = 1<<6;
 	int readcount = 0;
 	for(readcount = 0; readcount < nReads; readcount++){
 
 		ReadResult[readcount] = GPIO_READMULT(readmask);
 	}
-	GPIO_CLR = 1<<6;
+//	GPIO_CLR = 1<<6;
 }
 
 int printReadings(int nReads, int ReadResult[]){

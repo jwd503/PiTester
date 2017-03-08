@@ -18,3 +18,5 @@ class ErrorInfo{
 		int calculateFrequency();
 
 };
+
+

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <time.h>
 
 #define MICROSECONDS 1000000.0
 
@@ -14,10 +15,20 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
 	errorCode = eCode;
 	std::string filename = "logs/";
 	char numstr[21]; // enough to hold all numbers up to 64-bits
-        sprintf(numstr, "%d", errorCode);
+	sprintf(numstr, "%d", errorCode);
 	filename = filename + numstr;
-	dumpToFile(filename.c_str());
+//	long int start_time;
+//	long int time_difference;
+//	struct timespec gettime_now;
 
+//	clock_gettime(CLOCK_REALTIME, &gettime_now);
+//	start_time = gettime_now.tv_nsec;		//Get nS value
+
+	dumpToFile(filename.c_str());
+//	clock_gettime(CLOCK_REALTIME, &gettime_now);
+//	time_difference = gettime_now.tv_nsec - start_time;
+
+//	printf("Time taken: %d\n", time_difference);
         int problemDetail = (errorCode & (0xF << 10)) >> 10;
         int location = (errorCode & (0x3F << 4)) >> 4;
 	printf("problemdetail: %d, location: %d\n",problemDetail, location);
@@ -51,6 +62,7 @@ void ErrorInfo::dumpToFile(const char* filename){
 	std::vector<int> localPins;
 	lastSeenPinAt.reserve(32);
 	localPins.reserve(32);
+	std::string strBuf;
 
 	for(int pinIndex = 0; pinIndex < 32; pinIndex++){
 		lastSeenPinAt[pinIndex] = 0;
@@ -61,39 +73,52 @@ void ErrorInfo::dumpToFile(const char* filename){
 	bool fullLoop = false;
 	int sampleIndex = startIndex;
 	int flag = 0;
+	//int pinMask = 0;
+	//bool previousSampleNotSet = false;
+	//bool nextSampleNotSet = false;
+
+	//int nextIndex = 0;
+	//int previousIndex =0;
+	//int pinIndex = 0;
 	while(fullLoop != true){
 		int nextIndex = (sampleIndex + 1) % (sampleSnapshot->size() - 1);
-		int previousIndex =  (sampleIndex - 1) < 0 ? (sampleSnapshot->size() - 1): (sampleIndex -1);
-		int pinIndex = 0;
 		if(sampleSnapshot->at(sampleIndex) == 0){ //No pins set to 1
                         if(flag == 0){
                                 myfile << "\n=========================================================================\n\n";
                                 flag = 1;
                         }
+			sampleIndex = nextIndex;
+	                fullLoop = sampleIndex == startIndex;
+			continue;
+
                 }else{
 			myfile << sampleIndex<< ": ";
 		}
 
-		for(pinIndex = 0; pinIndex < 32; pinIndex++){
+		int previousIndex =  (sampleIndex - 1) < 0 ? (sampleSnapshot->size() - 1): (sampleIndex -1);
+		int pinIndex = 0;
+		for(pinIndex = 2; pinIndex < 28; pinIndex++){
 			if( 1<<localPins[pinIndex] & sampleSnapshot->at(sampleIndex)){
 				int difference = 0;
 				double hz = 0.0;
 				int sampleFlag = 0;
                                 myfile << "\t\t" << pinIndex;
-				bool previousSampleNotSet =	(1 << localPins[pinIndex] & sampleSnapshot->at(previousIndex)) == 0;
-				bool nextSampleNotSet =		(1 << localPins[pinIndex] & sampleSnapshot->at(nextIndex)) == 0;
+				int pinMask = 1 << localPins[pinIndex];
+				bool previousSampleNotSet =	(pinMask & sampleSnapshot->at(previousIndex)) == 0;
+				bool nextSampleNotSet =	false; //(pinMask & sampleSnapshot->at(nextIndex)) == 0;
 				if(previousSampleNotSet || nextSampleNotSet){
 					if(lastSeenPinAt[pinIndex] != 0){
-						difference = ((sampleIndex - lastSeenPinAt[pinIndex]) * 100);
 						if(sampleIndex < lastSeenPinAt[pinIndex]){
 							difference = (((sampleSnapshot->size() -1) - lastSeenPinAt[pinIndex]) + sampleIndex) * 100;
+						} else{
+							difference = ((sampleIndex - lastSeenPinAt[pinIndex]) * 100);
 						}
 
 						hz = MICROSECONDS / difference;
 					}
 					lastSeenPinAt[pinIndex] = sampleIndex;
-					myfile << "\t" << difference  << "us elapsed  aprox hz:" << hz << "\n";
-                                        sampleFlag = 1;
+					myfile << "\t" << difference << "us hz:" << hz << "\n";
+					sampleFlag = 1;
 				}
 
 				if (sampleFlag == 0) myfile << "\n";
