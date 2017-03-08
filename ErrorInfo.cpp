@@ -45,55 +45,63 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
 void ErrorInfo::dumpToFile(const char* filename){
 
 	std::ofstream myfile;
-	myfile.open(filename);
-	int lastSeenPinAt[32] = {0};
-	int flag = 0;
-	printf("Size: %d\n",sampleSnapshot->size());
-	for (int sampleIndex = 0; sampleIndex < sampleSnapshot->size(); sampleIndex++){
-		if (sampleSnapshot->at(sampleIndex) != 0) {
-			myfile << sampleIndex << ": ";
-			for(int pin = 2; pin < 28; pin++){
-				if( 1<< pin & sampleSnapshot->at(sampleIndex)){
-					int sampleFlag = 0;
-					myfile << "\t\t" << pin;
-					if (sampleIndex > 0){
-						double hz = 0;
-						int difference = 0;
-						//Check if the previous entry had this pin on, finds first in sequence
-						if((1<< pin & sampleSnapshot->at(sampleIndex -1)) == 0){
-							if(lastSeenPinAt[pin] != 0){
-								difference = ((sampleIndex - lastSeenPinAt[pin]) * 100);
-								hz = MICROSECONDS / difference;
-							}
-							lastSeenPinAt[pin] = sampleIndex;
-							myfile << " " << difference  << "us elapsed  aprox hz:" << hz << "\n";
-							sampleFlag = 1;
+        myfile.open(filename);
 
-						}else if(sampleIndex < 9999){
-							//Check if the next entry had this pin on, finds last in sequence
-							if((1 << pin & sampleSnapshot->at(sampleIndex)) == 0){
-								if(lastSeenPinAt[pin] != 0){
-									difference = ((sampleIndex - lastSeenPinAt[pin]) * 100);
-									hz = MICROSECONDS / difference;
-								}
-								//outputs duration of the pulse
-								myfile << " " << difference  << "us elapsed  aprox hz:" << hz << "\n";
-								sampleFlag = 1;
-								lastSeenPinAt[pin] = sampleIndex;
-							}
+	std::vector<int> lastSeenPinAt;
+	std::vector<int> localPins;
+	lastSeenPinAt.reserve(32);
+	localPins.reserve(32);
+
+	for(int pinIndex = 0; pinIndex < 32; pinIndex++){
+		lastSeenPinAt[pinIndex] = 0;
+		localPins[pinIndex] = pinIndex;
+        }
+
+	int startIndex = errorIndex + 1;
+	bool fullLoop = false;
+	int sampleIndex = startIndex;
+	int flag = 0;
+	while(fullLoop != true){
+		int nextIndex = (sampleIndex + 1) % (sampleSnapshot->size() - 1);
+		int previousIndex =  (sampleIndex - 1) < 0 ? (sampleSnapshot->size() - 1): (sampleIndex -1);
+		int pinIndex = 0;
+		if(sampleSnapshot->at(sampleIndex) == 0){ //No pins set to 1
+                        if(flag == 0){
+                                myfile << "\n=========================================================================\n\n";
+                                flag = 1;
+                        }
+                }else{
+			myfile << sampleIndex<< ": ";
+		}
+
+		for(pinIndex = 0; pinIndex < 32; pinIndex++){
+			if( 1<<localPins[pinIndex] & sampleSnapshot->at(sampleIndex)){
+				int difference = 0;
+				double hz = 0.0;
+				int sampleFlag = 0;
+                                myfile << "\t\t" << pinIndex;
+				bool previousSampleNotSet =	(1 << localPins[pinIndex] & sampleSnapshot->at(previousIndex)) == 0;
+				bool nextSampleNotSet =		(1 << localPins[pinIndex] & sampleSnapshot->at(nextIndex)) == 0;
+				if(previousSampleNotSet || nextSampleNotSet){
+					if(lastSeenPinAt[pinIndex] != 0){
+						difference = ((sampleIndex - lastSeenPinAt[pinIndex]) * 100);
+						if(sampleIndex < lastSeenPinAt[pinIndex]){
+							difference = (((sampleSnapshot->size() -1) - lastSeenPinAt[pinIndex]) + sampleIndex) * 100;
 						}
+
+						hz = MICROSECONDS / difference;
 					}
-					if (sampleFlag == 0) myfile << "\n";
+					lastSeenPinAt[pinIndex] = sampleIndex;
+					myfile << "\t" << difference  << "us elapsed  aprox hz:" << hz << "\n";
+                                        sampleFlag = 1;
 				}
-			}
-			myfile << "\n";
-			flag = 0;
-		}else{ //No pins set to 1
-			if(flag == 0){
-				myfile << "=========================================================================\n";
-				flag = 1;
+
+				if (sampleFlag == 0) myfile << "\n";
+				flag = 0;
 			}
 		}
+		sampleIndex = nextIndex;
+		fullLoop = sampleIndex == startIndex;
 	}
 }
 
@@ -102,6 +110,7 @@ int ErrorInfo::calculateFrequency(){
 	std::vector<int> lastSeenPinAt;
 	std::vector<double> pinFrequency;
 	std::vector<int> pinDifference;
+
 	lastSeenPinAt.reserve(pins.size());
 	pinFrequency.reserve(pins.size());
 	pinDifference.reserve(pins.size());
@@ -120,7 +129,6 @@ int ErrorInfo::calculateFrequency(){
 		int previousIndex =  (sampleIndex - 1) < 0 ? (sampleSnapshot->size() - 1): (sampleIndex -1);
 		int pinIndex = 0;
 		for(pinIndex = 0; pinIndex < pins.size(); pinIndex++){
-//			pinDifference[pinIndex] = 0;
 			if( 1<<pins[pinIndex] & sampleSnapshot->at(sampleIndex)){
 				if( (1<<pins[pinIndex] & sampleSnapshot->at(previousIndex)) == 0){
 					if(lastSeenPinAt[pinIndex] != 0){
