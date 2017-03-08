@@ -25,7 +25,7 @@ int CoilTracker::updateCoil(int gpioReading){
 
 	if (coil.inValidState() == 0){
 		e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coil.location, COIL_TO_COIL));
-		printf("There is probably something wrong with coil: %s, state:%d\n",coil.name.c_str(), coil.getCoilState());
+//		printf("There is probably something wrong with coil: %s, state:%d\n",coil.name.c_str(), coil.getCoilState());
 	}
 	return coilStateChanged;
 
