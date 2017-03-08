@@ -5,7 +5,6 @@ class ErrorInfo{
 		std::vector<int> pins;
 		int errorIndex;
 		int errorCode;
-		int frequency;
 		void appendPinLevel(int location);
 		void appendCoilTerminalLevel(int location);
 		void appendCoilLevel(int location);
@@ -16,6 +15,7 @@ class ErrorInfo{
 
 		void dumpToFile(const char* filename);
 		int calculateFrequency();
+		int frequency;
 
 };
 

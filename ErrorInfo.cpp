@@ -31,7 +31,7 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
 //	printf("Time taken: %d\n", time_difference);
         int problemDetail = (errorCode & (0xF << 10)) >> 10;
         int location = (errorCode & (0x3F << 4)) >> 4;
-	printf("problemdetail: %d, location: %d\n",problemDetail, location);
+//	printf("problemdetail: %d, location: %d\n",problemDetail, location);
 	switch(problemDetail){
 		case 0x0: //No detail
                         break;
@@ -135,15 +135,18 @@ int ErrorInfo::calculateFrequency(){
 	std::vector<int> lastSeenPinAt;
 	std::vector<double> pinFrequency;
 	std::vector<int> pinDifference;
+	std::vector<double> pinMean;
 
 	lastSeenPinAt.reserve(pins.size());
 	pinFrequency.reserve(pins.size());
 	pinDifference.reserve(pins.size());
+	pinMean.reserve(pins.size());
 
 	for(int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
 		lastSeenPinAt[pinIndex] = 0;
 		pinFrequency[pinIndex] = 0;
 		pinDifference[pinIndex] = 0;
+		pinMean[pinIndex] = 50.0;
         }
 
 	int startIndex = errorIndex + 1;
@@ -161,8 +164,9 @@ int ErrorInfo::calculateFrequency(){
 						if(sampleIndex < lastSeenPinAt[pinIndex]){
 							pinDifference[pinIndex] = (((sampleSnapshot->size() -1) - lastSeenPinAt[pinIndex]) + sampleIndex) * 100;
 						}
-
 						pinFrequency[pinIndex] = MICROSECONDS / pinDifference[pinIndex];
+						pinMean[pinIndex] = (pinMean[pinIndex] * 0.9) + (pinFrequency[pinIndex] * 0.1);
+
 					}
 					lastSeenPinAt[pinIndex] = sampleIndex;
 				}
@@ -171,13 +175,21 @@ int ErrorInfo::calculateFrequency(){
 		sampleIndex = nextIndex;
 		fullLoop = sampleIndex == startIndex;
 	}
-
+	double lowestFreq = 500000;
+	double highestFreq = 0;
 	for(int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
-
+		if (pinFrequency[pinIndex] < lowestFreq) lowestFreq = pinFrequency[pinIndex];
+		if (pinFrequency[pinIndex] > highestFreq) highestFreq = pinFrequency[pinIndex];
 		printf("pinFreq[%d]: %f, %i, %i\n", pinIndex, pinFrequency[pinIndex], pinDifference[pinIndex], pins[pinIndex]);
-
+		printf("pinMean[%d]: %f, %i\n", pinIndex, pinMean[pinIndex], pins[pinIndex]);
 	}
 
+//	printf("lowest: %f, highest: %f\n", lowestFreq, highestFreq);
+	if((lowestFreq > 125) && (highestFreq < 800)){
+		return 1;
+	}else{
+		return 0;
+	}
 }
 
 void ErrorInfo::appendPinLevel(int location){
