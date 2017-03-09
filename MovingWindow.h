@@ -9,6 +9,7 @@ class MovingWindow{
 		MovingWindow(int size);
 		void incrementIndex();
 		int getWindowIndex();
+		int getPreviousWindowIndex();
 		void setCurrentValue(int value);
 		void incrementCurrentValue();
 		int getCurrentValue();

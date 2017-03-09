@@ -13,6 +13,14 @@ int MovingWindow::getWindowIndex(){
 	return windowIndex;
 }
 
+int MovingWindow::getPreviousWindowIndex(){
+	int index = windowIndex - 1;
+	if(windowIndex - 1 < 0){
+		index = data.capacity() - 1;
+	}
+	return index;
+}
+
 void MovingWindow::incrementIndex(){
 	windowIndex++;
 	windowIndex = windowIndex > data.size() ? 0: windowIndex;
