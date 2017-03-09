@@ -13,6 +13,8 @@ class MovingWindow{
 		void setCurrentValue(int value);
 		void incrementCurrentValue();
 		int getCurrentValue();
+		int getValue(int index);
+
 };
 
 #endif
