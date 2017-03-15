@@ -12,6 +12,10 @@ Motor::Motor(int pin1, int pin2, std::string name1, int location1, int pin3, int
 	errorCount = 0;
 	lastErrorFlag = 0;
 	e = errorPointer;
+	pinMeanCount[0] = 0;
+	pinMeanCount[1] = 0;
+	pinMeanCount[2] = 0;
+	pinMeanCount[3] = 0;
 }
 
 CoilTracker* Motor::getCoilTracker(int index){
@@ -47,10 +51,53 @@ int Motor::updateLastFired(int firedIndex){
 }
 
 int Motor::updateCoils(int gpioReading){
+
+	int lowerThreshold = 2;
+	int upperThreshold = 1500;
 	int coilStateChanged[2] = {0};
 	coilStateChanged[0] = coilTracker[0].updateCoil(gpioReading);
 	coilStateChanged[1] = coilTracker[1].updateCoil(gpioReading);
 	int errorFlag = 0;
+	int coilState[2] = {0};
+	coilState[0] = coilTracker[0].getCoil()->getCoilState();
+	coilState[1] = coilTracker[1].getCoil()->getCoilState();
+
+	for(int coilIndex = 0; coilIndex < 2; coilIndex++){
+		if(coilStateChanged[coilIndex] == 1){
+			MovingWindow&  s = coilTracker[coilIndex].states;
+			int prevIndex = s.getPreviousWindowIndex();
+			int prevValue = s.getValue(prevIndex);
+
+
+			bool leadingEdge[2];
+			leadingEdge[0] = ((0x1 & coilState[coilIndex]) > 0) && ((0x1 & prevValue) == 0);
+			leadingEdge[1] = ((0x2 & coilState[coilIndex]) > 0) && ((0x2 & prevValue) == 0);
+
+			bool fallingEdge[2];
+			fallingEdge[0] = ((0x1 & coilState[coilIndex]) == 0) && ((0x1 & prevValue) > 0);
+			fallingEdge[1] = ((0x2 & coilState[coilIndex]) == 0) && ((0x2 & prevValue) > 0);
+
+			int windowIndex = coilIndex * 2;
+			if(leadingEdge[0]){	//pin1 changed to 1
+				pinMeanCount[(coilIndex * 2)] = (pinMeanCount[(coilIndex * 2)] * 0.8) + (0.2 * coilTracker[coilIndex].getValue(windowIndex));
+			}
+			if(leadingEdge[1]){	//pin2 changed to 1
+				windowIndex++;
+				pinMeanCount[(coilIndex * 2) + 1] = (pinMeanCount[(coilIndex * 2) + 1] * 0.8) + (0.2 * coilTracker[coilIndex].getValue(windowIndex));
+			}
+		}else{
+			if(coilState[coilIndex] == 0){
+				pinMeanCount[coilIndex * 2] = pinMeanCount[coilIndex * 2]  <= 0? 0: pinMeanCount[coilIndex * 2] - 0.1 - (0.0001 * pinMeanCount[(coilIndex * 2)]);
+				pinMeanCount[(coilIndex * 2) + 1] = pinMeanCount[(coilIndex * 2) + 1]  <= 0? 0: pinMeanCount[(coilIndex * 2) + 1] - 0.1 - (0.0001 * pinMeanCount[(coilIndex * 2) + 1]);
+			}
+
+		}
+	}
+
+	for(int pinIndex = 0; pinIndex < 4; pinIndex++){
+//		if(pinMeanCount[pinIndex] != 0)
+//			printf("pinMeanCount[%d]: %f\n", pinIndex, pinMeanCount[pinIndex]);
+	}
 	//Both states changed since last reading, given that we are sampling at ~10kHz probably something wrong
 	if ((coilStateChanged[0] == coilStateChanged[1]) && (coilStateChanged[0] == 1)){
 		int coilState[2] = {0};
@@ -72,16 +119,22 @@ int Motor::updateCoils(int gpioReading){
 		int coilStatus = checkLastFired(0);
 		if(coilStatus != 0){
 
-			if(lastErrorFlag == 1){
-				errorCount++;
-			}else{
-				lastErrorFlag = 1;
-				errorCount = lastFiredCount;
-			}
-			if(errorCount >= 4){
-				errorFlag = 1;
-				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
-//				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
+			if(pinMeanCount[0] > lowerThreshold && pinMeanCount[0] < upperThreshold){
+				if(pinMeanCount[1] > lowerThreshold && pinMeanCount[1] < upperThreshold){
+					if(lastErrorFlag == 1){
+                                		errorCount++;
+				        }else{
+		                	       	lastErrorFlag = 1;
+                		               	errorCount = lastFiredCount;
+				        }
+
+					if (errorCount >= 2){
+						errorFlag = 1;
+						e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
+//						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
+					}
+
+				}
 			}
 		}else{
 			//reset error flag
@@ -101,17 +154,23 @@ int Motor::updateCoils(int gpioReading){
 //			e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
 //			printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 //			lastFiredCount = 0;
-			if(lastErrorFlag == 2){
-				errorCount++;
-			}else{
-				lastErrorFlag = 2;
-				errorCount = lastFiredCount;
+			if(pinMeanCount[2] > lowerThreshold && pinMeanCount[2] < upperThreshold){
+				if(pinMeanCount[3] > lowerThreshold && pinMeanCount[3] < upperThreshold){
+					if(lastErrorFlag == 2){
+						errorCount++;
+					}else{
+						lastErrorFlag = 2;
+						errorCount = lastFiredCount;
+					}
+
+					if(errorCount >= 2 ){
+						e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
+//						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
+						errorFlag = 2;
+					}
+				}
 			}
-			if(errorCount >= 4 ){
-				e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
-//				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
-				errorFlag = 2;
-			}
+
 		}else{
 			//reset error flag
 			lastErrorFlag = 0;

@@ -13,6 +13,7 @@ class Motor{
 		int lastErrorFlag;
 		int sameFireCount;
 		ErrorReporting* e;
+		double pinMeanCount[4];
 	public:
 		Motor(int pin1, int pin2, std::string name1,int location1, int pin3, int pin4, std::string name2, int location2, ErrorReporting* errorPointer);
 		CoilTracker* getCoilTracker(int index);
