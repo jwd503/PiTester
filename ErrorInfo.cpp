@@ -24,7 +24,7 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
 //	clock_gettime(CLOCK_REALTIME, &gettime_now);
 //	start_time = gettime_now.tv_nsec;		//Get nS value
 
-	dumpToFile(filename.c_str());
+//	dumpToFile(filename.c_str());
 //	clock_gettime(CLOCK_REALTIME, &gettime_now);
 //	time_difference = gettime_now.tv_nsec - start_time;
 
@@ -180,16 +180,16 @@ int ErrorInfo::calculateFrequency(){
 	for(int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
 		if (pinFrequency[pinIndex] < lowestFreq) lowestFreq = pinFrequency[pinIndex];
 		if (pinFrequency[pinIndex] > highestFreq) highestFreq = pinFrequency[pinIndex];
-		printf("pinFreq[%d]: %f, %i, %i\n", pinIndex, pinFrequency[pinIndex], pinDifference[pinIndex], pins[pinIndex]);
-		printf("pinMean[%d]: %f, %i\n", pinIndex, pinMean[pinIndex], pins[pinIndex]);
+//		printf("pinFreq[%d]: %f, %i, %i\n", pinIndex, pinFrequency[pinIndex], pinDifference[pinIndex], pins[pinIndex]);
+//		printf("pinMean[%d]: %f, %i\n", pinIndex, pinMean[pinIndex], pins[pinIndex]);
 	}
 
 //	printf("lowest: %f, highest: %f\n", lowestFreq, highestFreq);
-	if((lowestFreq > 125) && (highestFreq < 800)){
+//	if((lowestFreq > 50) && (highestFreq < 800)){
 		return 1;
-	}else{
-		return 0;
-	}
+//	}else{
+//		return 0;
+//	}
 }
 
 void ErrorInfo::appendPinLevel(int location){
