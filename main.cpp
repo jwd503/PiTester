@@ -31,7 +31,7 @@ int showMenu();
 int checkButtons();
 int runDynamicTest(int readmask);
 int runStaticTest();
-
+int runOptoTest();
 int main()
 {
 	//Map the virtual address to the physical pi registers
@@ -63,9 +63,9 @@ int main()
 				runDynamicTest(readmask);
 				break;
 			case 3:
-				printf("Executing the static test\n");
+				printf("Executing the opto test\n");
 				delayMicroseconds(100000);
-				runStaticTest();
+				runOptoTest();
 				break;
 			default:
 				printf("No action attatched to that button\n");
@@ -76,6 +76,7 @@ int main()
 	return 0;
 
 }
+
 int runDynamicTest(int readmask){
 	int sample[10000] = {0};
 	int sampleIndex = 0;
@@ -83,8 +84,7 @@ int runDynamicTest(int readmask){
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
-
-
+	//unsigned int pinTime[32] = {0};
 	int exitCondition = 0;
 	int exitRead = 0;
 	volatile int READ_OK = 0;
@@ -104,6 +104,9 @@ int runDynamicTest(int readmask){
 
 		sample[sampleIndex] = bitwiseAverageArray(readResult, dynamicReads);
 
+//		for(int pinIndex = 0; pinIndex < 32; pinIndex++){
+//			pinTime[pinIndex] =
+//		}
 		int motorIndex = 0;
 		int errorFlag = 0;
 		for(motorIndex = 0; motorIndex < motor.size(); motorIndex++){
@@ -136,6 +139,81 @@ int runDynamicTest(int readmask){
 		}
 		sampleIndex++;
 		if(sampleIndex > 10000) sampleIndex = 0;
+
+		exitRead = GPIO_READMULT(0xFFFFFFC);
+		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
+		if(exitRead  != 0){
+			exitCondition = flashLED(0,1000);//checkButtons();
+			if(exitCondition != 0){
+				INP_GPIO(6);
+				return exitCondition;
+			}
+		}
+
+	}
+	INP_GPIO(6);
+}
+
+int runOptoTest(){
+	int sample[10000] = {0};
+	int sampleIndex = 0;
+
+	int dynamicReads = 1; //NREADS
+	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
+
+	int exitCondition = 0;
+	int exitRead = 0;
+	volatile int READ_OK = 0;
+	int pioPins[] = {15,24,22,11};
+
+	int readmask = (1<<pioPins[0]) | (1<<pioPins[1]) | (1<<pioPins[2]) | (1<<pioPins[3]);
+	printf("Readmask: %d\n", readmask);
+	int readResult = 0;
+	int lastReading = 0;
+	int pioValues[4] = {0};
+	int prevPioValues[4] = {0};
+	int pioChanged = 0;
+	while(1)
+	{
+		readResult = 0;
+		delayMicroseconds(100);
+
+		readResult = GPIO_READMULT(readmask);
+
+		//READ_OK = printReadings(NREADS, readResult);
+		//if (READ_OK != 1){
+		//	continue;
+		//}
+//		printf("last: %d, now: %d\n", lastReading, readResult[0]);
+		//Reading has changed since last checked
+//		if(lastReading != readResult){
+		//single out the pioPins
+		pioChanged = 0;
+		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
+			int pioMask = (1<<pioPins[pioIndex]);
+			pioValues[pioIndex] = ((readResult & pioMask) >> pioPins[pioIndex]);
+			prevPioValues[pioIndex] = ((lastReading & pioMask) >> pioPins[pioIndex]);
+			if(pioValues[pioIndex] != prevPioValues[pioIndex]){
+//                                printf("PIO%d Value:%d,%d, raw current:%d, raw last:%d\n",pioIndex, pioValues[pioIndex], prevPioValues[pioIndex], readResult, lastReading);
+				pioChanged = 1;
+                        }
+
+
+		}
+		if (pioChanged ==1){
+			printf("PIO values: %d%d%d%d\n", pioValues[0], pioValues[1], pioValues[2], pioValues[3]);
+		}
+		//Check if the pioValues have changed
+//		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
+//			printf("%d\n", pioIndex);
+//			if(pioValues[pioIndex] != prevPioValues[pioIndex]){
+//				printf("PIO%d Value:%d,%d, raw current:%d, raw last:%d\n",pioIndex, pioValues[pioIndex], prevPioValues[pioIndex], readResult, lastReading);
+//				prevPioValues[pioIndex] = pioValues[pioIndex];
+//			}
+//		}
+//		}
+
+		lastReading = readResult;
 
 		exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
