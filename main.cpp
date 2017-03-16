@@ -462,6 +462,8 @@ void setOutputs(int outputmask){
 
 std::vector<Coil>* configureCoils(ErrorReporting* errorPointer){
 	static std::vector<Coil> c;
+	c.erase(c.begin(), c.end());
+
 	c.reserve(8);
 	c.push_back(Coil(2,3,"M2.A",M2A,errorPointer));//
         c.push_back(Coil(4,12,"M0.A",M0A,errorPointer));//
@@ -477,6 +479,8 @@ std::vector<Coil>* configureCoils(ErrorReporting* errorPointer){
 
 std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer){
 	static std::vector<CoilTracker> mP;
+	mP.erase(mP.begin(), mP.end());
+
 	mP.reserve(8);
 	mP.push_back(CoilTracker(2,3,"M2.A",M2A,errorPointer, 32));//
 	mP.push_back(CoilTracker(4,12,"M0.A",M0A,errorPointer,32));//
@@ -492,6 +496,7 @@ std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer){
 
 std::vector<Motor>* configureMotors(ErrorReporting* errorPointer){
 	static std::vector<Motor> motorArray;
+	motorArray.erase(motorArray.begin(), motorArray.end());
 	motorArray.reserve(4);
 
 	motorArray.push_back(Motor(4,12,"M0.A",M0A,14,16,"M0.B",M0B, errorPointer));
