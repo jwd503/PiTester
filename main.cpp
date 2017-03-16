@@ -189,6 +189,9 @@ int runOptoTest(){
 			pioValues[pioIndex] = ((readResult & pioMask) >> pioPins[pioIndex]);
 			prevPioValues[pioIndex] = ((lastReading & pioMask) >> pioPins[pioIndex]);
 
+			pioValues[pioIndex] = pioValues[pioIndex] > 0 ? 0: 1;
+			prevPioValues[pioIndex] = prevPioValues[pioIndex] > 0 ? 0: 1;
+
 			if(pioValues[pioIndex] != prevPioValues[pioIndex]){
 				pioChanged = 1;
                         }
