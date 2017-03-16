@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -g3 -std=c++1y
+CXXFLAGS =  -std=c++1y
 OBJECTS = main.o PJ_RPI.o TestCase.o Coil.o MovingWindow.o CoilTracker.o Motor.o ErrorReporting.o ErrorInfo.o
 
 LDIR =../lib
@@ -12,6 +12,9 @@ main : $(OBJECTS)
 
 %.o : %.c
 	$(CC) $(CXXFLAGS) -c $<
+
+debug : CXXFLAGS += -g3
+debug : main
 
 clean:
 	rm *.o
