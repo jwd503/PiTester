@@ -210,7 +210,7 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 	if((a1Result == counter) && (a2Result == counter) && (b1Result == counter) && (b2Result == counter)){
 		// All of the coils were missing
 		int coilLocation = coilTracker[0].getCoil()->location;
-		int errorCode = e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT));
+		int errorCode = e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT);
 		e->setNextErrorCode(errorCode);
 		flag = 1;
 	}else{
