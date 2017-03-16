@@ -6,6 +6,9 @@
 void delayMicroseconds (unsigned int howLong);
 int flashLED(unsigned int duration, unsigned int delayBeforeRead);
 void setPullDown();
+void setPullDown(int mask);
+void setPullUp(int mask);
+void setPull(int mask, int direction);
 int interrupts(int flag);
 
 
@@ -59,16 +62,29 @@ void delayMicroseconds (unsigned int howLong)
  }
 
 void setPullDown(){
-        GPIO_PULL = 1;
+	setPull(0x7FFFFFC,1);
+}
+
+void setPullDownMasked(int mask){
+	setPull(mask, 1);
+}
+
+void setPullUp(int mask){
+	setPull(mask, 2);
+}
+
+void setPull(int mask, int direction){
+        GPIO_PULL = direction;
         //wait 150 cycles
         delayMicroseconds(5);
-        GPIO_PULLCLK0 = 0x7FFFFFC;
+        GPIO_PULLCLK0 = mask;
         //wait 150 cycles
         delayMicroseconds(5);
         GPIO_PULL = 0;
         delayMicroseconds(5);
         GPIO_PULLCLK0 = 0;
         delayMicroseconds(5);
+
 
 }
 

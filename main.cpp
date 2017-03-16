@@ -173,6 +173,8 @@ int runOptoTest(){
 	int pioValues[4] = {0};
 	int prevPioValues[4] = {0};
 	int pioChanged = 0;
+	int pullUpMask = (1<< 22) | (1<<11);
+	setPullUp(pullUpMask);
 	while(1)
 	{
 		readResult = 0;
@@ -180,47 +182,32 @@ int runOptoTest(){
 
 		readResult = GPIO_READMULT(readmask);
 
-		//READ_OK = printReadings(NREADS, readResult);
-		//if (READ_OK != 1){
-		//	continue;
-		//}
-//		printf("last: %d, now: %d\n", lastReading, readResult[0]);
-		//Reading has changed since last checked
-//		if(lastReading != readResult){
 		//single out the pioPins
 		pioChanged = 0;
 		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
 			int pioMask = (1<<pioPins[pioIndex]);
 			pioValues[pioIndex] = ((readResult & pioMask) >> pioPins[pioIndex]);
 			prevPioValues[pioIndex] = ((lastReading & pioMask) >> pioPins[pioIndex]);
+
 			if(pioValues[pioIndex] != prevPioValues[pioIndex]){
-//                                printf("PIO%d Value:%d,%d, raw current:%d, raw last:%d\n",pioIndex, pioValues[pioIndex], prevPioValues[pioIndex], readResult, lastReading);
 				pioChanged = 1;
                         }
 
-
 		}
+
 		if (pioChanged ==1){
 			printf("PIO values: %d%d%d%d\n", pioValues[0], pioValues[1], pioValues[2], pioValues[3]);
 		}
-		//Check if the pioValues have changed
-//		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
-//			printf("%d\n", pioIndex);
-//			if(pioValues[pioIndex] != prevPioValues[pioIndex]){
-//				printf("PIO%d Value:%d,%d, raw current:%d, raw last:%d\n",pioIndex, pioValues[pioIndex], prevPioValues[pioIndex], readResult, lastReading);
-//				prevPioValues[pioIndex] = pioValues[pioIndex];
-//			}
-//		}
-//		}
 
 		lastReading = readResult;
 
+		//Check if any buttons have been pressed
 		exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
 		if(exitRead  != 0){
 			exitCondition = flashLED(0,1000);//checkButtons();
 			if(exitCondition != 0){
-				INP_GPIO(6);
+				setPullDown();
 				return exitCondition;
 			}
 		}
@@ -602,29 +589,31 @@ int showMenu(){
 int checkButtons(){
 	int readResult = 0;
 	int storedResult = 0;
-	while(1){
-		readResult = GPIO_READMULT(0xFFFFFFC);
-		if(readResult!= 0){
-//			printf("Something detected %x\n", readResult);
-			delayMicroseconds(5000);
-			readResult = GPIO_READMULT(0xFFFFFFC);
-			if(readResult != 0){
-				storedResult = readResult;
-//				printf("Something detected after 5 ms %x\n",readResult);
-				do {
-					readResult= GPIO_READMULT(0xFFFFFFC);
-					delayMicroseconds(100);
-				}while (readResult != 0);
-				break;
-			}
-		}
-	}
 	const int gpio9 = 1<<9;
 	const int gpio18 = 1<<18;
 	const int gpio23 = 1<<23;
 	const int gpio26 = 1<<26;
 
 	int pinMask = gpio9 | gpio18 | gpio23 | gpio26;
+
+	while(1){
+		readResult = GPIO_READMULT(pinMask);
+		if(readResult!= 0){
+//			printf("Something detected %x\n", readResult);
+			delayMicroseconds(5000);
+			readResult = GPIO_READMULT(pinMask);
+			if(readResult != 0){
+				storedResult = readResult;
+//				printf("Something detected after 5 ms %x\n",readResult);
+				do {
+					readResult= GPIO_READMULT(pinMask);
+					delayMicroseconds(100);
+				}while (readResult != 0);
+				break;
+			}
+		}
+	}
+
 	int gpioPin = storedResult & pinMask;
 	int returnValue = 0;
 	switch(gpioPin){
