@@ -109,7 +109,10 @@ int Motor::updateCoils(int gpioReading){
 			updateLastFired(2);
 		}
 		if(sameFireCount > 3){
-			e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_TO_COIL));
+
+			int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_TO_COIL);
+			e->setNextErrorCode(errorCode);
+
 			errorFlag = 4;
 		}
 	}else if(coilStateChanged[0] == 1){ //coil1 state changed
@@ -130,7 +133,8 @@ int Motor::updateCoils(int gpioReading){
 
 					if (errorCount >= 2){
 						errorFlag = 1;
-						e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF));
+						int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF);
+						e->setNextErrorCode(errorCode);
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
 					}
 
@@ -164,7 +168,8 @@ int Motor::updateCoils(int gpioReading){
 					}
 
 					if(errorCount >= 2 ){
-						e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
+						int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF);
+						e->setNextErrorCode(errorCode);
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 						errorFlag = 2;
 					}
@@ -205,31 +210,36 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 	if((a1Result == counter) && (a2Result == counter) && (b1Result == counter) && (b2Result == counter)){
 		// All of the coils were missing
 		int coilLocation = coilTracker[0].getCoil()->location;
-		e->setNextErrorCode(e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT));
+		int errorCode = e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT));
+		e->setNextErrorCode(errorCode);
 		flag = 1;
 	}else{
 
 		if(a1Result != 0){
 //			printf("a1 result: %d\n", a1Result);
-			e->setNextErrorCode(e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin1, ELECTRICAL_SHORT));
+			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin1, ELECTRICAL_SHORT);
+			e->setNextErrorCode(errorCode);
 			flag = 2;
 		}
 
 		if(a2Result != 0){
 //			printf("a2 result: %d\n", a2Result);
-			e->setNextErrorCode(e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin2, ELECTRICAL_SHORT));
+			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin2, ELECTRICAL_SHORT);
+			e->setNextErrorCode(errorCode);
 			flag = 3;
 		}
 
 		if(b1Result != 0){
 //			printf("b1 result: %d\n", b1Result);
-			e->setNextErrorCode(e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin3, ELECTRICAL_SHORT));
+			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin3, ELECTRICAL_SHORT);
+			e->setNextErrorCode(errorCode);
 			flag = 4;
 		}
 
 		if(b2Result != 0){
 //			printf("b2 result: %d, pin4: %d\n", b2Result, pin4);
-			e->setNextErrorCode(e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin4, ELECTRICAL_SHORT));
+			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin4, ELECTRICAL_SHORT);
+			e->setNextErrorCode(errorCode);
 			flag = 5;
 		}
 	}
