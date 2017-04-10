@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS =  -std=c++1y
+CXXFLAGS =  -std=c++1y -pedantic -Wall -Wextra -Wformat -Wno-missing-field-initializers
 OBJECTS = main.o PJ_RPI.o TestCase.o Coil.o MovingWindow.o CoilTracker.o Motor.o ErrorReporting.o ErrorInfo.o
 
 LDIR =../lib

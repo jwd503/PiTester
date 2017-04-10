@@ -81,7 +81,7 @@ int Coil::setCoilState(int gpioReading){
 	//Calculate the new coilState
 	coilState = 0;
 	coilState |= pin1Bit >> pins[0];	//bit 0 in coilState
-	coilState |= pin2Bit >> pins[1]-1;	//bit 1 in coilState
+	coilState |= pin2Bit >> (pins[1]-1);	//bit 1 in coilState
 
 	if (previousCoilState !=coilState){
 		//if ((strcmp("M2.A", name.c_str())==0)| (strcmp("M2.B", name.c_str())==0)){
@@ -104,4 +104,5 @@ int Coil::inValidState(){
 			//illegal state
 			return 0;
 	}
+	return 0;
 }

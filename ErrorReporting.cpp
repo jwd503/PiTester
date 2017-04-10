@@ -12,7 +12,7 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
 		errorVec[errorIndex] = 0;
 	}
 	currentErrorCodeIndex = 0;
-};
+}
 
 int ErrorReporting::getErrorCode(int errorIndex){
 	if(errorIndex < MAX_ERROR_CODES){
@@ -244,11 +244,10 @@ std::string ErrorReporting::getMotorName(int location){
 }
 
 void ErrorReporting::setGpioHistory(int errorID){
-	int &sampleRef = *sample;
 	int &sampleIndexRef = *sampleIndex;
 	int gpioHistoryIndex = 0;
 	for(gpioHistoryIndex = HISTORY_ITEMS - 1; gpioHistoryIndex >= 0; gpioHistoryIndex--){
-		if(sampleIndex - gpioHistoryIndex >= 0){
+		if(sampleIndexRef - gpioHistoryIndex >= 0){
 			gpioHistory[(errorID * HISTORY_ITEMS) + gpioHistoryIndex] = sample[(sampleIndexRef - gpioHistoryIndex)];
 		}else{
 			 gpioHistory[(errorID * HISTORY_ITEMS) + gpioHistoryIndex] = 0x3;

@@ -64,7 +64,7 @@ void ErrorInfo::dumpToFile(const char* filename){
 	localPins.reserve(32);
 	std::string strBuf;
 
-	for(int pinIndex = 0; pinIndex < 32; pinIndex++){
+	for(unsigned int pinIndex = 0; pinIndex < 32; pinIndex++){
 		lastSeenPinAt[pinIndex] = 0;
 		localPins[pinIndex] = pinIndex;
         }
@@ -142,7 +142,7 @@ int ErrorInfo::calculateFrequency(){
 	pinDifference.reserve(pins.size());
 	pinMean.reserve(pins.size());
 
-	for(int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
+	for(unsigned int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
 		lastSeenPinAt[pinIndex] = 0;
 		pinFrequency[pinIndex] = 0;
 		pinDifference[pinIndex] = 0;
@@ -155,8 +155,7 @@ int ErrorInfo::calculateFrequency(){
 	while(fullLoop != true){
 		int nextIndex = (sampleIndex + 1) % (sampleSnapshot->size() - 1);
 		int previousIndex =  (sampleIndex - 1) < 0 ? (sampleSnapshot->size() - 1): (sampleIndex -1);
-		int pinIndex = 0;
-		for(pinIndex = 0; pinIndex < pins.size(); pinIndex++){
+		for(unsigned int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
 			if( 1<<pins[pinIndex] & sampleSnapshot->at(sampleIndex)){
 				if( (1<<pins[pinIndex] & sampleSnapshot->at(previousIndex)) == 0){
 					if(lastSeenPinAt[pinIndex] != 0){
@@ -177,7 +176,7 @@ int ErrorInfo::calculateFrequency(){
 	}
 	double lowestFreq = 500000;
 	double highestFreq = 0;
-	for(int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
+	for(unsigned int pinIndex = 0; pinIndex < pins.size(); pinIndex++){
 		if (pinFrequency[pinIndex] < lowestFreq) lowestFreq = pinFrequency[pinIndex];
 		if (pinFrequency[pinIndex] > highestFreq) highestFreq = pinFrequency[pinIndex];
 //		printf("pinFreq[%d]: %f, %i, %i\n", pinIndex, pinFrequency[pinIndex], pinDifference[pinIndex], pins[pinIndex]);

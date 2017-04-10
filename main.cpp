@@ -87,7 +87,6 @@ int runDynamicTest(int readmask){
 	//unsigned int pinTime[32] = {0};
 	int exitCondition = 0;
 	int exitRead = 0;
-	volatile int READ_OK = 0;
 	OUT_GPIO(6);
 	printf("%d motors to check\n", motor.size());
 	while(1)
@@ -97,19 +96,11 @@ int runDynamicTest(int readmask){
 
 		takeReadings(dynamicReads, readResult, readmask);
 
-		//READ_OK = printReadings(NREADS, readResult);
-		//if (READ_OK != 1){
-		//	continue;
-		//}
-
 		sample[sampleIndex] = bitwiseAverageArray(readResult, dynamicReads);
 
-//		for(int pinIndex = 0; pinIndex < 32; pinIndex++){
-//			pinTime[pinIndex] =
-//		}
-		int motorIndex = 0;
 		int errorFlag = 0;
-		for(motorIndex = 0; motorIndex < motor.size(); motorIndex++){
+		for(unsigned int motorIndex = 0; motorIndex < motor.size(); motorIndex++){
+			motor[motorIndex].updateState(sample[sampleIndex]);
 			errorFlag |= motor[motorIndex].updateCoils(sample[sampleIndex]);
 		}
 
@@ -121,15 +112,15 @@ int runDynamicTest(int readmask){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
 				if(e.errorVec[errorIndex] != 0){
-//					if(e.errorVec[errorIndex]->frequency > 30){
-						printf("freq: %lf\n", ((e.errorVec[errorIndex])->frequency));
+					printf("freq: %lf\n", ((e.errorVec[errorIndex])->frequency));
+					if((e.errorVec[errorIndex]->frequency > 30)|| (e.errorVec[errorIndex]->frequency == 0)){
 						//std::cout << e.errorVec[errorIndex]->frequency;
 						printf("sampleIndex: %d\n", sampleIndex);
 						//e.printGpioHistory(errorIndex);//index is auto incremented
 						printf(e.generateErrorMessage(errorCode).c_str());
 						printf("\nerrorCode: %x\n",errorCode);
 						flashLED(100000, 0);
-//					}
+					}
 					e.setErrorCode(errorIndex, 0);
 					delete e.errorVec[errorIndex];
 					e.errorVec[errorIndex] = 0;
@@ -152,18 +143,17 @@ int runDynamicTest(int readmask){
 
 	}
 	INP_GPIO(6);
+	return 0;
 }
 
 int runOptoTest(){
 	int sample[10000] = {0};
 	int sampleIndex = 0;
 
-	int dynamicReads = 1; //NREADS
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 
 	int exitCondition = 0;
 	int exitRead = 0;
-	volatile int READ_OK = 0;
 	int pioPins[] = {15,24,22,11};
 
 	int readmask = (1<<pioPins[0]) | (1<<pioPins[1]) | (1<<pioPins[2]) | (1<<pioPins[3]);
@@ -217,6 +207,7 @@ int runOptoTest(){
 
 	}
 	INP_GPIO(6);
+	return 0;
 }
 
 int runStaticTest(){
@@ -229,8 +220,6 @@ int runStaticTest(){
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
-	std::vector<Coil> *coils = configureCoils(&e);
-	std::vector<Coil>  &coilVec = *coils;
 
 	int resulting[2];
 	int* resultargs = resulting;
@@ -238,11 +227,9 @@ int runStaticTest(){
 	int readpins[32] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26, 27};
 	int readmask = generateGPIOReadMask();
 	int outputmask = 0;
-	int pinIndex = 0;
-	int exitCode = 0;
 	int groundPins[] = {20, 9, 11, 15, 22, 24, 23};
 
-	for (pinIndex= 0; pinIndex < 7; pinIndex++){
+	for (unsigned int pinIndex= 0; pinIndex < 7; pinIndex++){
 		outputpins[1] = groundPins[pinIndex];
 		resultargs  = pinsToMask(outputpins, readpins, resultargs);
 		outputmask = resultargs[0];
@@ -272,14 +259,11 @@ int runStaticTest(){
 		volatile int READ_OK = 0;
 
 		GPIO_CLR = 0x7FFFFFC;
-		int a = 0;
 		int retryCount = 0;
 
 		//Test Motors
-		int i = 0;
-		int motorIndex = 0;
 		int checkNext = 0;
-		for (motorIndex = 0; motorIndex < motor.size(); motorIndex++){
+		for (unsigned int motorIndex = 0; motorIndex < motor.size(); motorIndex++){
 			checkNext = 0;
 			int coilPins[4];
 			int* tempCoilPins = motor[motorIndex].getCoilTracker(0)->getCoil()->getPins();
@@ -400,7 +384,7 @@ int runStaticTest(){
 //		}
 */
 	}
-
+	return 0;
 }
 
 void takeReadings(int nReads, int ReadResult[], int readmask){
@@ -418,15 +402,11 @@ int printReadings(int nReads, int ReadResult[]){
 	volatile int pinmask = (1 << 6);
 	int readcount = 0;
 	int capacitorBitCount = 0;
-	int volatile capacitorBit = 0;
 	for(readcount = 0; readcount < nReads; readcount++){
 		if(ReadResult[readcount]!= 0){
-//			printf("Result[%d] = %#08X\n", readcount, ReadResult[readcount]);
 		}
 		capacitorBitCount += ((pinmask & ReadResult[readcount]) > 0) ? 0 : 1;
-		//printf("Bit val = %d", (capacitorBit  > 0) ? 1 :0);
 	}
-//	printf("Zeroes seen: %d\n", capacitorBitCount );
 	return (capacitorBitCount > ZEROES_SEEN) ? 1 : 0;
 }
 
@@ -640,4 +620,5 @@ int checkButtons(){
 //		default:
 //			printf("Press fewer buttons\n");
 	}
+	return returnValue;
 }

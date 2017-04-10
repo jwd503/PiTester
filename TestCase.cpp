@@ -19,7 +19,7 @@ int TestCase::compareAll(){
 	}
 
 	return (result == 1)? 0: 1;
-};
+}
 
 int TestCase::compareOne(int id){
 	if(id < NREADS){
@@ -35,12 +35,12 @@ int TestCase::compareOne(int id){
 	} else{
 		return 1;
 	}
-};
+}
 
 int TestCase::getOutputMask(){
 	return outputMask;
-};
+}
 
 int TestCase::getExpectedResult(){
 	return expectedResult;
-};
+}
