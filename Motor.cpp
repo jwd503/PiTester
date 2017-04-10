@@ -1,9 +1,13 @@
 #include "Motor.h"
 #include <stdio.h>
 #include "ErrorReporting.h"
+#include <unistd.h>
+#include <sys/time.h>
 
 #define FIRE_COUNT 4
 #define WINDOW_SIZE 32
+constexpr Motor::StateTransition Motor::transitionTable[];
+
 Motor::Motor(int pin1, int pin2, std::string name1, int location1, int pin3, int pin4, std::string name2,int location2, ErrorReporting* errorPointer) :
 	coilTracker({{pin1, pin2, name1, location1, errorPointer, WINDOW_SIZE},{pin3, pin4, name2, location2, errorPointer, WINDOW_SIZE}}){
 	lastFiredIndex = 0;
@@ -16,6 +20,11 @@ Motor::Motor(int pin1, int pin2, std::string name1, int location1, int pin3, int
 	pinMeanCount[1] = 0;
 	pinMeanCount[2] = 0;
 	pinMeanCount[3] = 0;
+	stateCount = 0;
+	currentState = STATE_IDLE;
+	name = name1 + name2;
+	passedStates = 0;
+	frequency = 0;
 }
 
 CoilTracker* Motor::getCoilTracker(int index){
@@ -111,7 +120,7 @@ int Motor::updateCoils(int gpioReading){
 		if(sameFireCount > 3){
 
 			int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_TO_COIL);
-			e->setNextErrorCode(errorCode);
+			e->setNextErrorCode(errorCode, frequency);
 
 			errorFlag = 4;
 		}
@@ -134,7 +143,7 @@ int Motor::updateCoils(int gpioReading){
 					if (errorCount >= 2){
 						errorFlag = 1;
 						int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF);
-						e->setNextErrorCode(errorCode);
+						e->setNextErrorCode(errorCode, frequency);
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
 					}
 
@@ -169,7 +178,7 @@ int Motor::updateCoils(int gpioReading){
 
 					if(errorCount >= 2 ){
 						int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF);
-						e->setNextErrorCode(errorCode);
+						e->setNextErrorCode(errorCode, frequency);
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 						errorFlag = 2;
 					}
@@ -197,7 +206,7 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 	int counter = 0;
 	int a1Result = 0, a2Result = 0, b1Result = 0, b2Result = 0;
 	int i = 0;
-	for(i = 8; i < NREADS - 12; i++){
+	for(i = 12; i < NREADS - 12; i++){
 		a1Result += compareOne(coilA1Reading[i], coilTracker[0].getCoil(), pin1);
 		a2Result += compareOne(coilA2Reading[i], coilTracker[0].getCoil(), pin2);
 		b1Result += compareOne(coilB1Reading[i], coilTracker[1].getCoil(), pin3);
@@ -211,35 +220,38 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 		// All of the coils were missing
 		int coilLocation = coilTracker[0].getCoil()->location;
 		int errorCode = e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT);
-		e->setNextErrorCode(errorCode);
+		e->setNextErrorCode(errorCode, frequency);
 		flag = 1;
 	}else{
 
 		if(a1Result != 0){
 //			printf("a1 result: %d\n", a1Result);
 			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin1, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode);
+			e->setNextErrorCode(errorCode, frequency);
 			flag = 2;
 		}
 
 		if(a2Result != 0){
 //			printf("a2 result: %d\n", a2Result);
 			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin2, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode);
+			e->setNextErrorCode(errorCode, frequency);
 			flag = 3;
 		}
 
 		if(b1Result != 0){
 //			printf("b1 result: %d\n", b1Result);
 			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin3, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode);
+			e->setNextErrorCode(errorCode, frequency);
 			flag = 4;
+			for(int index =0; index < 8; index++){
+				printf("reading[%d]: %d\n", index, coilB1Reading[index]);
+			}
 		}
 
 		if(b2Result != 0){
 //			printf("b2 result: %d, pin4: %d\n", b2Result, pin4);
 			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin4, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode);
+			e->setNextErrorCode(errorCode, frequency);
 			flag = 5;
 		}
 	}
@@ -254,11 +266,12 @@ int Motor::compareOne(int value, Coil* testCoil, int pin){
 	if ((value & mask) == (expectedResults  & mask)){
 		return 0;
 	} else{
+		printf("observed: %d, expected: %d, pin: %d\n", (value & ~(1 << 6)) ,(expectedResults  & ~(1 << 6)), pin);
+
 		if (value == (1 << pin)){
 			//Potentially open circuit
 			return 2;
 		}else {
-//			printf("observed: %d, expected: %d, pin: %d\n", (value & ~(1 << 6)) ,(expectedResults  & ~(1 << 6)), pin);
 			return 1;
 		}
 	}

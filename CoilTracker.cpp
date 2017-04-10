@@ -40,7 +40,7 @@ int CoilTracker::updateCoil(int gpioReading){
 //	prevCoilState = coilState;
 	if (coil.inValidState() == 0){
 		int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coil.location, COIL_TO_COIL);
-		e->setNextErrorCode(errorCode);
+		e->setNextErrorCode(errorCode,100.0);
 //		printf("There is probably something wrong with coil: %s, state:%d\n",coil.name.c_str(), coil.getCoilState());
 	}
 	return coilStateChanged;

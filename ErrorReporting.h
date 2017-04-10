@@ -47,7 +47,7 @@ class ErrorReporting{
 		ErrorReporting(int* samplePointer, int* sampleIndexPointer);
 		int getErrorCode(int errorIndex);
 		int getCurrentErrorCodeIndex();
-		void  setNextErrorCode(int errorCode);
+		void  setNextErrorCode(int errorCode, double frequency);
 		int findErrorCode(int errorCode);
 		int generateErrorCode(int testType, int problemDetail, int location, int problemType);
 		std::string generateErrorMessage(int errorCode);

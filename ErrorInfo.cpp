@@ -7,7 +7,7 @@
 
 #define MICROSECONDS 1000000.0
 
-ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
+ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, double frequency){
 	sampleSnapshot =  new std::vector<int>;
 	sampleSnapshot->insert(sampleSnapshot->begin(), samples, samples + 10000);
 
@@ -49,8 +49,8 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode){
                         break;
 	}
 
-	frequency = calculateFrequency();
-
+	this->frequency = frequency;
+//	printf("Frequency is %lf\n", frequency);
 }
 
 void ErrorInfo::dumpToFile(const char* filename){

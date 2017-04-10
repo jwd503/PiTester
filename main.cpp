@@ -89,7 +89,7 @@ int runDynamicTest(int readmask){
 	int exitRead = 0;
 	volatile int READ_OK = 0;
 	OUT_GPIO(6);
-
+	printf("%d motors to check\n", motor.size());
 	while(1)
 	{
 		int readResult[1] = {0};
@@ -110,9 +110,7 @@ int runDynamicTest(int readmask){
 		int motorIndex = 0;
 		int errorFlag = 0;
 		for(motorIndex = 0; motorIndex < motor.size(); motorIndex++){
-
 			errorFlag |= motor[motorIndex].updateCoils(sample[sampleIndex]);
-
 		}
 
 		//if(errorFlag > 0){
@@ -123,13 +121,15 @@ int runDynamicTest(int readmask){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
 				if(e.errorVec[errorIndex] != 0){
-					if(e.errorVec[errorIndex]->frequency == 1){
+//					if(e.errorVec[errorIndex]->frequency > 30){
+						printf("freq: %lf\n", ((e.errorVec[errorIndex])->frequency));
+						//std::cout << e.errorVec[errorIndex]->frequency;
 						printf("sampleIndex: %d\n", sampleIndex);
 						//e.printGpioHistory(errorIndex);//index is auto incremented
 						printf(e.generateErrorMessage(errorCode).c_str());
 						printf("\nerrorCode: %x\n",errorCode);
 						flashLED(100000, 0);
-					}
+//					}
 					e.setErrorCode(errorIndex, 0);
 					delete e.errorVec[errorIndex];
 					e.errorVec[errorIndex] = 0;

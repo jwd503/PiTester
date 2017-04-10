@@ -10,12 +10,12 @@ class ErrorInfo{
 		void appendCoilLevel(int location);
 		void appendMotorLevel(int location);
 	public:
-		ErrorInfo(int* samples, int eIndex, int eCode);
+		ErrorInfo(int* samples, int eIndex, int eCode, double frequency);
 		~ErrorInfo();
 
 		void dumpToFile(const char* filename);
 		int calculateFrequency();
-		int frequency;
+		double frequency;
 
 };
 

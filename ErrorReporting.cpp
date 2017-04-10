@@ -25,7 +25,7 @@ void ErrorReporting::setErrorCode(int errorCodeI, int errorCode){
 	errorCodes[errorCodeI] = errorCode;
 }
 
-void ErrorReporting::setNextErrorCode(int errorCode){
+void ErrorReporting::setNextErrorCode(int errorCode, double frequency){
 	//int errorCodeIndex = 0;
 	//for(errorCodeIndex= 0; errorCodeIndex < MAX_ERROR_CODES; errorCodeIndex++){
 	//	if (errorCodes[errorCodeIndex] == errorCode){
@@ -35,7 +35,7 @@ void ErrorReporting::setNextErrorCode(int errorCode){
 	errorCodes[currentErrorCodeIndex] = errorCode;
 	setGpioHistory(currentErrorCodeIndex);
 	incrementErrorCodeIndex();
-	errorVec[currentErrorCodeIndex] = new ErrorInfo(sample, *sampleIndex, errorCode);
+	errorVec[currentErrorCodeIndex] = new ErrorInfo(sample, *sampleIndex, errorCode, frequency);
 }
 
 void ErrorReporting::incrementErrorCodeIndex(){
