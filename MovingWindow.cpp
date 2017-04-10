@@ -27,11 +27,13 @@ int MovingWindow::getValue(int index){
 
 void MovingWindow::incrementIndex(){
 	windowIndex++;
-	windowIndex = windowIndex > data.size() ? 0: windowIndex;
+	windowIndex = ((windowIndex >= data.size()) ? 0: windowIndex);
 }
 
 void MovingWindow::setCurrentValue(int value){
-	data[windowIndex] = value;
+	if(windowIndex < data.size()){
+		data[windowIndex] = value;
+	}
 }
 
 int MovingWindow::getCurrentValue(){
@@ -39,5 +41,7 @@ int MovingWindow::getCurrentValue(){
 }
 
 void MovingWindow::incrementCurrentValue(){
-	data[windowIndex]++;
+	if(windowIndex < data.size()){
+		data[windowIndex]++;
+	}
 }
