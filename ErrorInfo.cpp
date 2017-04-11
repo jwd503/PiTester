@@ -15,7 +15,7 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, double frequency){
 	errorCode = eCode;
 	std::string filename = "logs/";
 	char numstr[21]; // enough to hold all numbers up to 64-bits
-	sprintf(numstr, "%d", errorCode);
+	sprintf(numstr, "%x", errorCode);
 	filename = filename + numstr;
 //	long int start_time;
 //	long int time_difference;
@@ -24,7 +24,7 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, double frequency){
 //	clock_gettime(CLOCK_REALTIME, &gettime_now);
 //	start_time = gettime_now.tv_nsec;		//Get nS value
 
-//	dumpToFile(filename.c_str());
+	dumpToFile(filename.c_str());
 //	clock_gettime(CLOCK_REALTIME, &gettime_now);
 //	time_difference = gettime_now.tv_nsec - start_time;
 
