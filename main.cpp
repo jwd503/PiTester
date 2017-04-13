@@ -52,6 +52,7 @@ int main()
 	int menuOption = 0;
 	while(1){
 		menuOption = showMenu();
+		float seconds;
 		switch(menuOption){
 			case 1:
 				printf("Executing the static test\n");
@@ -66,6 +67,17 @@ int main()
 				printf("Executing the opto test\n");
 				delayMicroseconds(100000);
 				runOptoTest();
+				break;
+			case 4:
+				printf("Timing Test\n");
+				struct timeval start;
+        		        struct timeval stop;
+	                	struct timeval total;
+				gettimeofday(&start,NULL);
+				gettimeofday(&stop,NULL);
+				timersub(&stop, &start, &total);
+				seconds = total.tv_usec / 1000000.0;
+				printf("%f seconds passed\n", seconds);
 				break;
 			default:
 				printf("No action attatched to that button\n");
@@ -112,8 +124,9 @@ int runDynamicTest(int readmask){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
 				if(e.errorVec[errorIndex] != 0){
-					printf("freq: %lf\n", ((e.errorVec[errorIndex])->frequency));
-					if((e.errorVec[errorIndex]->frequency > 30)|| (e.errorVec[errorIndex]->frequency == 0)){
+
+					if((e.errorVec[errorIndex]->frequency > 30)){
+						printf("freq: %f\n", ((e.errorVec[errorIndex])->frequency));
 						//std::cout << e.errorVec[errorIndex]->frequency;
 						printf("sampleIndex: %d\n", sampleIndex);
 						//e.printGpioHistory(errorIndex);//index is auto incremented
