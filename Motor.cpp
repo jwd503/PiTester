@@ -20,7 +20,6 @@ Motor::Motor(int pin1, int pin2, std::string name1, int location1, int pin3, int
 	pinMeanCount[1] = 0;
 	pinMeanCount[2] = 0;
 	pinMeanCount[3] = 0;
-	stateCount = 0;
 	currentState = STATE_IDLE;
 	name = name1 + name2;
 	passedStates = 0;
@@ -50,7 +49,7 @@ int Motor::checkLastFired(int firedIndex){
 	}
 }
 
-int Motor::updateLastFired(int firedIndex){
+void Motor::updateLastFired(int firedIndex){
 	if (lastFiredIndex == firedIndex){
 		lastFiredCount++;
 	}else {
@@ -77,14 +76,13 @@ int Motor::updateCoils(int gpioReading){
 			int prevIndex = s.getPreviousWindowIndex();
 			int prevValue = s.getValue(prevIndex);
 
-
 			bool leadingEdge[2];
 			leadingEdge[0] = ((0x1 & coilState[coilIndex]) > 0) && ((0x1 & prevValue) == 0);
 			leadingEdge[1] = ((0x2 & coilState[coilIndex]) > 0) && ((0x2 & prevValue) == 0);
 
-			bool fallingEdge[2];
-			fallingEdge[0] = ((0x1 & coilState[coilIndex]) == 0) && ((0x1 & prevValue) > 0);
-			fallingEdge[1] = ((0x2 & coilState[coilIndex]) == 0) && ((0x2 & prevValue) > 0);
+//			bool fallingEdge[2];
+//			fallingEdge[0] = ((0x1 & coilState[coilIndex]) == 0) && ((0x1 & prevValue) > 0);
+//			fallingEdge[1] = ((0x2 & coilState[coilIndex]) == 0) && ((0x2 & prevValue) > 0);
 
 			int windowIndex = coilIndex * 2;
 			if(leadingEdge[0]){	//pin1 changed to 1
@@ -131,8 +129,8 @@ int Motor::updateCoils(int gpioReading){
 		int coilStatus = checkLastFired(0);
 		if(coilStatus != 0){
 
-			if(pinMeanCount[0] > lowerThreshold && pinMeanCount[0] < upperThreshold){
-				if(pinMeanCount[1] > lowerThreshold && pinMeanCount[1] < upperThreshold){
+//			if(pinMeanCount[0] > lowerThreshold && pinMeanCount[0] < upperThreshold){
+//				if(pinMeanCount[1] > lowerThreshold && pinMeanCount[1] < upperThreshold){
 					if(lastErrorFlag == 1){
                                 		errorCount++;
 				        }else{
@@ -147,8 +145,8 @@ int Motor::updateCoils(int gpioReading){
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
 					}
 
-				}
-			}
+//				}
+//			}
 		}else{
 			//reset error flag
 			lastErrorFlag = 0;
@@ -167,8 +165,8 @@ int Motor::updateCoils(int gpioReading){
 //			e->setNextErrorCode(e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF));
 //			printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 //			lastFiredCount = 0;
-			if(pinMeanCount[2] > lowerThreshold && pinMeanCount[2] < upperThreshold){
-				if(pinMeanCount[3] > lowerThreshold && pinMeanCount[3] < upperThreshold){
+//			if(pinMeanCount[2] > lowerThreshold && pinMeanCount[2] < upperThreshold){
+//				if(pinMeanCount[3] > lowerThreshold && pinMeanCount[3] < upperThreshold){
 					if(lastErrorFlag == 2){
 						errorCount++;
 					}else{
@@ -181,8 +179,8 @@ int Motor::updateCoils(int gpioReading){
 						e->setNextErrorCode(errorCode, frequency);
 //						printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 						errorFlag = 2;
-					}
-				}
+//					}
+//				}
 			}
 
 		}else{
@@ -246,6 +244,7 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 			for(int index =0; index < 8; index++){
 				printf("reading[%d]: %d\n", index, coilB1Reading[index]);
 			}
+
 		}
 
 		if(b2Result != 0){
@@ -275,5 +274,70 @@ int Motor::compareOne(int value, Coil* testCoil, int pin){
 			return 1;
 		}
 	}
+
+}
+
+
+void Motor::updateState(int gpioReading){
+        int* coilP1 = coilTracker[0].getCoil()->getPins();
+        int* coilP2 = coilTracker[1].getCoil()->getPins();
+        int pins[] = {coilP1[0], coilP1[1], coilP2[0], coilP2[1]};
+
+        //Calculate the state value which we can then use to check for a transition
+        int stateValue = 0;
+        for(int pinIndex = 0; pinIndex < 4; pinIndex++){
+                int pinMask             = 1<<pins[pinIndex];
+                int maskedValue         = pinMask & gpioReading;
+                int normalisedValue     = maskedValue >> (pins[pinIndex] - pinIndex);
+                stateValue |= normalisedValue;
+        }
+
+	int transitionFound = 0;
+
+        for(int transitionIndex = 0; transitionIndex < 16; transitionIndex++){
+		bool isCurrentState = this->transitionTable[transitionIndex].source == currentState;
+		bool isThisInput = this->transitionTable[transitionIndex].input == stateValue;
+
+		if(isCurrentState && isThisInput){
+			transitionFound = 1;
+			int target =  this->transitionTable[transitionIndex].target;
+			if(target != 0){//Moving to non IDLE state
+				passedStates |= 1<<target;
+				for(unsigned int timingIndex = 1; timingIndex < 5; timingIndex++){
+					motorTiming[timingIndex].passedStates |= 1<<target;
+				}
+			}else{//Moving to IDLE state
+				//reset the timers for the currentState
+				motorTiming[currentState].frequency = 0;
+				gettimeofday(&motorTiming[currentState].start, NULL);
+				float sum = motorTiming[4].frequency + motorTiming[1].frequency + motorTiming[2].frequency + motorTiming[3].frequency;
+				float avg = sum/4.0;
+				frequency = 0;
+			}
+			//Update currentState
+	                currentState = this->transitionTable[transitionIndex].target;
+			if(target != 0){
+				//stop the timers and calculate a period/frequency
+				gettimeofday(&motorTiming[currentState].stop, NULL);
+				timersub(&motorTiming[currentState].stop, &motorTiming[currentState].start, &motorTiming[currentState].total);
+				float time_taken = motorTiming[currentState].total.tv_sec + (motorTiming[currentState].total.tv_usec / 1000000.0);
+
+				motorTiming[currentState].frequency = 1.0/ time_taken;
+				float sum = motorTiming[1].frequency + motorTiming[2].frequency + motorTiming[3].frequency + motorTiming[4].frequency;
+				float avg = sum/4.0;
+
+				frequency = avg;
+				coilTracker[0].frequency = avg;
+				coilTracker[1].frequency = avg;
+
+				//Begin the new timer
+				gettimeofday(&motorTiming[currentState].start, NULL);
+
+			}
+
+
+                }
+
+        }
 
 }

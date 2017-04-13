@@ -14,7 +14,7 @@ class Motor{
 		int errorCount;
 		int lastErrorFlag;
 		int sameFireCount;
-		double frequency;
+		float frequency;
 		ErrorReporting* e;
 		double pinMeanCount[4];
 		std::string name;
@@ -22,6 +22,16 @@ class Motor{
 		struct timeval stop;
 		struct timeval total;
 
+		typedef struct
+		{
+			struct timeval start;
+			struct timeval stop;
+			struct timeval total;
+			unsigned int passedStates;
+			float frequency;
+		}timing;
+		timing motorTiming[5];
+		unsigned int currentTiming;
 		enum State {
 			STATE_IDLE	= 0,
 			STATE_ONE	= 1,
@@ -31,10 +41,10 @@ class Motor{
 		};
 		enum Input {
 			IN_NONE		= 0,
-			IN_ONE		= 8,
-			IN_TWO		= 4,
-			IN_THREE	= 2,
-			IN_FOUR		= 1,
+			IN_ONE		= 1,
+			IN_TWO		= 2,
+			IN_THREE	= 4,
+			IN_FOUR		= 8,
 		};
 
 		typedef struct
@@ -50,6 +60,13 @@ class Motor{
 			{ STATE_IDLE,	STATE_TWO,	IN_TWO	},
 			{ STATE_IDLE,	STATE_THREE,	IN_THREE},
 			{ STATE_IDLE,	STATE_FOUR,	IN_FOUR	},
+
+			// Input is the same so stay in current state
+//			{ STATE_ONE,	STATE_ONE,	IN_ONE	},
+//			{ STATE_TWO,	STATE_TWO,	IN_TWO	},
+//			{ STATE_THREE,	STATE_THREE,	IN_THREE},
+//			{ STATE_FOUR,	STATE_FOUR,	IN_FOUR },
+
 			// Motor rotations
 			{ STATE_FOUR,	STATE_ONE,	IN_ONE	},
 			{ STATE_ONE,	STATE_THREE,	IN_THREE},
@@ -66,6 +83,7 @@ class Motor{
 			{ STATE_TWO,	STATE_IDLE,	IN_NONE	},
 			{ STATE_THREE,	STATE_IDLE,	IN_NONE	},
 			{ STATE_FOUR,	STATE_IDLE,	IN_NONE	},
+
 		};
 		State currentState;
 		int passedStates;
@@ -76,7 +94,7 @@ class Motor{
 		Motor(int pin1, int pin2, std::string name1,int location1, int pin3, int pin4, std::string name2, int location2, ErrorReporting* errorPointer);
 		CoilTracker* getCoilTracker(int index);
 		int checkLastFired(int firedIndex);
-		int updateLastFired(int firedIndex);
+		void updateLastFired(int firedIndex);
 		int checkCoils(int gpioReading);
 		int updateCoils(int gpioReading);
 		int testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin2, int coilB1Reading[], int pin3, int coilB2Reading[], int pin4);
