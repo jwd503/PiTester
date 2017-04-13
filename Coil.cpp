@@ -70,7 +70,7 @@ int Coil::setCoilState(int gpioReading){
 	//Create masks for the bits we are in
 	int pin1Mask = 1 << pins[0];
 	int pin2Mask = 1 << pins[1];
-//	printf("pin1mask: %d, pin2Mask: %d, coil:%s\n",pin1Mask, pin2Mask, name.c_str());
+
 	//Mask out the bits we are interested in
 	int pin1Bit = gpioReading & pin1Mask;
 	int pin2Bit = gpioReading & pin2Mask;
@@ -82,12 +82,6 @@ int Coil::setCoilState(int gpioReading){
 	coilState = 0;
 	coilState |= pin1Bit >> pins[0];	//bit 0 in coilState
 	coilState |= pin2Bit >> (pins[1]-1);	//bit 1 in coilState
-
-	if (previousCoilState !=coilState){
-		//if ((strcmp("M2.A", name.c_str())==0)| (strcmp("M2.B", name.c_str())==0)){
-	//		printf("pin1Bit: %d, pin2Bit: %d, Motor:%s\n",pin1Bit>>(pins[0]), pin2Bit>>(pins[1]-1), name.c_str());
-	//	}
-	}
 
 	//Check if the coilState has changed
 	result = (previousCoilState == coilState)? 0:1;
