@@ -22,6 +22,6 @@ class CoilTracker{
 		int updateCoil(int gpioReading);
 		Coil* getCoil();
 		int getValue(int index);
-
+		float frequency;
 };
 #endif

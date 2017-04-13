@@ -7,7 +7,7 @@
 
 #define MICROSECONDS 1000000.0
 
-ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, double frequency){
+ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 	//Take a snapshot of the last 10k samples before the error occured
 	sampleSnapshot =  new std::vector<int>;
 	sampleSnapshot->insert(sampleSnapshot->begin(), samples, samples + 10000);

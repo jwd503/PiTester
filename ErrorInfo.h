@@ -6,11 +6,11 @@ class ErrorInfo{
 		int errorCode;
 
 	public:
-		ErrorInfo(int* samples, int eIndex, int eCode, double frequency);
+		ErrorInfo(int* samples, int eIndex, int eCode, float frequency);
 		~ErrorInfo();
 
 		void dumpToFile(const char* filename);
-		double frequency;
+		float frequency;
 
 };
 
