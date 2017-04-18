@@ -12,7 +12,7 @@
 #include "CoilTracker.h"
 #include "Utility.h"
 #include "ErrorReporting.h"
-
+#include "LEDChar.h"
 
 #define ZEROES_SEEN 19
 #define NREADS 32
@@ -47,8 +47,8 @@ int main()
 	setPullDown();
 
 	setAllPinsToInp();
-
-
+	int ledval = 64;
+	LEDChar led[4] = {LEDChar(0,ledval), LEDChar(1,ledval), LEDChar(2,ledval), LEDChar(3,ledval)};
 	int menuOption = 0;
 	while(1){
 		menuOption = showMenu();
@@ -78,6 +78,34 @@ int main()
 				timersub(&stop, &start, &total);
 				seconds = total.tv_usec / 1000000.0;
 				printf("%f seconds passed\n", seconds);
+				setOutputs((1<<26) | (1<<23) | (1<<20) | (1<<9) |(1<<18));
+				led[0].clearRegister();
+				for(int segmentIndex = 0; segmentIndex < 8; segmentIndex++){
+					int ledSelect = 0;
+					int segmentSelect = 0;
+					for (int ledIndex = 0; ledIndex < 4; ledIndex++){
+						int segmentSelectInd = led[ledIndex].decode(segmentIndex);
+						if (segmentSelectInd != 0){
+							ledSelect |= led[ledIndex].ledSelect;
+							segmentSelect = segmentSelectInd;
+						}
+					}
+					GPIO_SET = segmentSelect;
+					delayMicroseconds(1);
+					GPIO_SET = 1<<18;
+					delayMicroseconds(1);
+					GPIO_CLR = 1<<18;
+					GPIO_CLR = segmentSelect;
+
+					GPIO_SET = ledSelect;
+					delayMicroseconds(1);
+					GPIO_SET = 1<<18;
+					delayMicroseconds(1);
+					GPIO_CLR = 1<<18;
+					GPIO_CLR = ledSelect;
+					delayMicroseconds(100);
+				}
+
 				break;
 			default:
 				printf("No action attatched to that button\n");
