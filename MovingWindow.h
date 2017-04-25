@@ -6,14 +6,14 @@ class MovingWindow{
 		int windowIndex;
 		std::vector<int> data;
 	public:
-		MovingWindow(int size);
+		explicit MovingWindow(int size);
 		void incrementIndex();
-		int getWindowIndex();
-		int getPreviousWindowIndex();
+		int getWindowIndex() const;
+		int getPreviousWindowIndex() const;
 		void setCurrentValue(int value);
 		void incrementCurrentValue();
-		int getCurrentValue();
-		int getValue(int index);
+		int getCurrentValue() const;
+		int getValue(int index) const;
 
 };
 

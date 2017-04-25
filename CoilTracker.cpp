@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 
-CoilTracker::CoilTracker(int pin1, int pin2, std::string name, int location, ErrorReporting* errorPointer, int size):
+CoilTracker::CoilTracker(int pin1, int pin2, const std::string name, int location, ErrorReporting* errorPointer, int size):
 	window(size),
-	states(size),
-	coil(pin1, pin2, name, location, e){
+	coil(pin1, pin2, name, location, e),
+	states(size){
 	e = errorPointer;
 	frequency = 0.0;
 }
@@ -47,11 +47,11 @@ int CoilTracker::updateCoil(int gpioReading){
 
 }
 
-int CoilTracker::getCurrentValue(){
+int CoilTracker::getCurrentValue() const{
 	return window.getCurrentValue();
 }
 
-int CoilTracker::getValue(int index){
+int CoilTracker::getValue(int index) const{
 	return window.getValue(index);
 }
 

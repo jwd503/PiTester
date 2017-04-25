@@ -18,10 +18,10 @@ class CoilTracker{
 		MovingWindow states;
 
 		CoilTracker(int pin1, int pin2, std::string name,int location, ErrorReporting* errorPointer, int size);
-		int getCurrentValue();
+		int getCurrentValue() const;
 		int updateCoil(int gpioReading);
 		Coil* getCoil();
-		int getValue(int index);
+		int getValue(int index) const;
 		float frequency;
 };
 #endif

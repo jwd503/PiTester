@@ -16,8 +16,8 @@ class LEDChar{
 		LEDChar(int index, int segments);
 		void setSegmentSelect(int segment);
 		void setSegments(int segments);
-		int getLEDPins();
-		void clearRegister();
+		static int getLEDPins();
+		static void clearRegister();
 		int decode(int bit);
 		int segments;
 		int ledSelect;

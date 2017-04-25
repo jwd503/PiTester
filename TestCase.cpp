@@ -1,8 +1,9 @@
 #include "TestCase.h"
 #include <stdio.h>
-TestCase::TestCase(int outputMaski, int expectedResulti){
-	outputMask = outputMaski;
-	expectedResult = expectedResulti;
+TestCase::TestCase(int outputMask, int expectedResult):
+	readResult{0}{
+	this->outputMask = outputMask;
+	this->expectedResult = expectedResult;
 }
 
 
@@ -37,10 +38,10 @@ int TestCase::compareOne(int id){
 	}
 }
 
-int TestCase::getOutputMask(){
+int TestCase::getOutputMask() const{
 	return outputMask;
 }
 
-int TestCase::getExpectedResult(){
+int TestCase::getExpectedResult() const{
 	return expectedResult;
 }

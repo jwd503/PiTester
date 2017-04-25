@@ -179,10 +179,9 @@ inline int interrupts(int flag)
 inline void setOutputs(int outputmask){
         int pin = 0;
         int pinmask = 0;
-        int result = 0;
         for(pin = 0; pin < 32; pin++){
                 pinmask = 1 << pin;
-                result = outputmask & pinmask;
+                int result = outputmask & pinmask;
                 if(result > 0){
                         INP_GPIO(pin);
                         OUT_GPIO(pin);

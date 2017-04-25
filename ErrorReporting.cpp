@@ -2,7 +2,8 @@
 #include <string>
 #include <stdio.h>
 
-ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
+ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer):
+	gpioHistory{0}{
 	sample = samplePointer;
 	sampleIndex = sampleIndexPointer;
 	errorVec.reserve(MAX_ERROR_CODES);
@@ -14,7 +15,7 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer){
 	currentErrorCodeIndex = 0;
 }
 
-int ErrorReporting::getErrorCode(int errorIndex){
+int ErrorReporting::getErrorCode(int errorIndex) const{
 	if(errorIndex < MAX_ERROR_CODES){
 		return errorCodes[errorIndex];
 	}
@@ -45,7 +46,7 @@ void ErrorReporting::incrementErrorCodeIndex(){
 	}
 }
 
-int ErrorReporting::findErrorCode(int errorCode){
+int ErrorReporting::findErrorCode(int errorCode) const{
 	int errorIndex = 0;
 	int found = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
@@ -262,6 +263,6 @@ void ErrorReporting::printGpioHistory(int errorID){
 
 }
 
-int ErrorReporting::getCurrentErrorCodeIndex(){
+int ErrorReporting::getCurrentErrorCodeIndex() const{
 	return currentErrorCodeIndex;
 }

@@ -6,19 +6,19 @@
 class Coil{
 	private:
 		int pins[2];
-		int getOther(int pin);
+		int getOther(int pin) const;
 		int coilState;
 		int previousCoilState;
 		ErrorReporting* e;
 	public:
 		std::string name;
-		Coil(int pin1, int pin2, std::string name1, int location1, ErrorReporting* errorPointer);
+		Coil(int pin1, int pin2, std::string name, int location1, ErrorReporting* errorPointer);
 		int* getPins();
-		int getExpectedMask(int pin);
-		int getCoilState();
-		int getPreviousCoilState();
+		int getExpectedMask(int pin) const;
+		int getCoilState() const;
+		int getPreviousCoilState() const;
 		int setCoilState(int gpioReading);
-		int inValidState();
+		int inValidState() const;
 		int location;
 
 };

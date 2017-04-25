@@ -14,8 +14,8 @@ class TestCase{
 		void setReads(int nReads);
 		int compareAll();
 		int compareOne(int id);
-		int getOutputMask();
-		int getExpectedResult();
+		int getOutputMask() const;
+		int getExpectedResult() const;
 };
 
 #endif

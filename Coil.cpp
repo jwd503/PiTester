@@ -5,12 +5,13 @@
 #include <string>
 #include <cstring>
 
-Coil::Coil(int pin1, int pin2, std::string name1, int location1, ErrorReporting* errorPointer){
+Coil::Coil(int pin1, int pin2, const std::string name, int location1, ErrorReporting* errorPointer):
+	name(name){
 	pins[0] = pin1;
 	pins[1] = pin2;
 	coilState = 0;
 	previousCoilState = 0;
-	name = name1;
+//	this->name = name;
 	e = errorPointer;
 	location = location1;
 
@@ -20,7 +21,7 @@ int* Coil::getPins(){
 	return pins;
 }
 
-int Coil::getOther(int pin){
+int Coil::getOther(int pin) const{
 	//Returns -1 when no match found, pin number otherwise
 	int pinIndex = -1;
 
@@ -39,7 +40,7 @@ int Coil::getOther(int pin){
 	return -1;
 }
 
-int Coil::getExpectedMask(int pin){
+int Coil::getExpectedMask(int pin) const{
 	//Returns 0 if this instance is not paired with the one provided, mask otherwise
 	int mask = 0;
 
@@ -55,11 +56,11 @@ int Coil::getExpectedMask(int pin){
 	return mask;
 }
 
-int Coil::getCoilState(){
+int Coil::getCoilState() const{
 	return coilState;
 }
 
-int Coil::getPreviousCoilState(){
+int Coil::getPreviousCoilState() const{
 	return previousCoilState;
 }
 
@@ -88,7 +89,7 @@ int Coil::setCoilState(int gpioReading){
 	return result;
 }
 
-int Coil::inValidState(){
+int Coil::inValidState() const{
 	switch(coilState){
 		case 0:	//No pins set
 		case 1: //pin 1 set

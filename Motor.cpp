@@ -245,8 +245,8 @@ void Motor::updateState(int gpioReading){
 				//reset the timers for the currentState
 				motorTiming[currentState].frequency = 0;
 				gettimeofday(&motorTiming[currentState].start, NULL);
-				float sum = motorTiming[4].frequency + motorTiming[1].frequency + motorTiming[2].frequency + motorTiming[3].frequency;
-				float avg = sum/4.0;
+//				float sum = motorTiming[4].frequency + motorTiming[1].frequency + motorTiming[2].frequency + motorTiming[3].frequency;
+//				float avg = sum/4.0;
 				frequency = 0;
 			}
 			//Update currentState

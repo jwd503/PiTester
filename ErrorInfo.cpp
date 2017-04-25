@@ -38,7 +38,6 @@ void ErrorInfo::dumpToFile(const char* filename){
 	std::vector<int> localPins;
 	lastSeenPinAt.reserve(32);
 	localPins.reserve(32);
-	std::string strBuf;
 
 	//initialise the starting values
 	for(unsigned int pinIndex = 0; pinIndex < 32; pinIndex++){
@@ -72,14 +71,14 @@ void ErrorInfo::dumpToFile(const char* filename){
 		for(int pinIndex = 2; pinIndex < 28; pinIndex++){
 			//Check if current pin is set to a non 0 value
 			if( 1<<localPins[pinIndex] & sampleSnapshot->at(sampleIndex)){
-				int difference = 0;
-				double hz = 0.0;
 				int sampleFlag = 0;
                                 myfile << "\t\t" << pinIndex;
 				int pinMask = 1 << localPins[pinIndex];
 				bool previousSampleNotSet =	(pinMask & sampleSnapshot->at(previousIndex)) == 0;
 				bool nextSampleNotSet =	false;
 				if(previousSampleNotSet || nextSampleNotSet){
+					double hz = 0.0;
+					int difference = 0;
 					if(lastSeenPinAt[pinIndex] != 0){
 						//Calculate an aproximate time that has elapsed since we last saw this pin go high(1)
 						if(sampleIndex < lastSeenPinAt[pinIndex]){

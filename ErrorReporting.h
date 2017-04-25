@@ -45,17 +45,17 @@ class ErrorReporting{
 		int* sampleIndex;
 	public:
 		ErrorReporting(int* samplePointer, int* sampleIndexPointer);
-		int getErrorCode(int errorIndex);
-		int getCurrentErrorCodeIndex();
+		int getErrorCode(int errorIndex) const;
+		int getCurrentErrorCodeIndex() const;
 		void  setNextErrorCode(int errorCode, float frequency);
-		int findErrorCode(int errorCode);
-		int generateErrorCode(int testType, int problemDetail, int location, int problemType);
-		std::string generateErrorMessage(int errorCode);
+		int findErrorCode(int errorCode) const;
+		static int generateErrorCode(int testType, int problemDetail, int location, int problemType);
+		static std::string generateErrorMessage(int errorCode);
 
-		std::string getMotorName(int location);
-		std::string getPinName(int location);
-		std::string getCoilTerminalName(int location);
-		std::string getCoilName(int location);
+		static std::string getMotorName(int location);
+		static std::string getPinName(int location);
+		static std::string getCoilTerminalName(int location);
+		static std::string getCoilName(int location);
 
 		void setErrorCode(int errorCodeI, int errorCode);
 		void setGpioHistory(int errorID);

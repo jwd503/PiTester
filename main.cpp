@@ -25,7 +25,7 @@ std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer);
 std::vector<Coil>* configureCoils(ErrorReporting* errorPointer);
 
 std::vector<Motor>* configureMotors(ErrorReporting* errorPointer);
-int retrieveExpectedMask(int pin, std::vector<Motor>* pairs);
+int retrieveExpectedMask(int pin, std::vector<Motor>* m);
 int retrieveExpectedMaskCoils(int pin, std::vector<Coil>* c);
 void setPullDown();
 int showMenu();
@@ -81,7 +81,7 @@ int main()
 
 				ledTest.driveDisplay("one");
 				ledTest.driveDisplay("four");
-				ledTest.driveDisplay("nine");
+				ledTest.driveDisplay("nine",1.0);
 				ledTest.driveDisplay("test");
 				ledTest.driveDisplay("dead");
 				ledTest.driveDisplay("to ");
@@ -116,7 +116,6 @@ int runDynamicTest(int readmask){
 	std::vector<Motor> &motor = *motors;
 	//unsigned int pinTime[32] = {0};
 	int exitCondition = 0;
-	int exitRead = 0;
 	OUT_GPIO(6);
 	printf("%d motors to check\n", motor.size());
 	while(1)
@@ -162,7 +161,7 @@ int runDynamicTest(int readmask){
 		sampleIndex++;
 		if(sampleIndex > 10000) sampleIndex = 0;
 
-		exitRead = GPIO_READMULT(0xFFFFFFC);
+		int exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
 		if(exitRead  != 0){
 			exitCondition = flashLED(0,1000);//checkButtons();
@@ -184,27 +183,23 @@ int runOptoTest(){
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 
 	int exitCondition = 0;
-	int exitRead = 0;
 	int pioPins[] = {15,24,22,11};
 
 	int readmask = (1<<pioPins[0]) | (1<<pioPins[1]) | (1<<pioPins[2]) | (1<<pioPins[3]);
 	printf("Readmask: %d\n", readmask);
-	int readResult = 0;
 	int lastReading = 0;
 	int pioValues[4] = {0};
 	int prevPioValues[4] = {0};
-	int pioChanged = 0;
 	int pullUpMask = (1<< 22) | (1<<11);
 	setPullUp(pullUpMask);
 	while(1)
 	{
-		readResult = 0;
 		delayMicroseconds(100);
 
-		readResult = GPIO_READMULT(readmask);
+		int readResult = GPIO_READMULT(readmask);
 
 		//single out the pioPins
-		pioChanged = 0;
+		int pioChanged = 0;
 		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
 			int pioMask = (1<<pioPins[pioIndex]);
 			pioValues[pioIndex] = ((readResult & pioMask) >> pioPins[pioIndex]);
@@ -226,7 +221,7 @@ int runOptoTest(){
 		lastReading = readResult;
 
 		//Check if any buttons have been pressed
-		exitRead = GPIO_READMULT(0xFFFFFFC);
+		int exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
 		if(exitRead  != 0){
 			exitCondition = flashLED(0,1000);//checkButtons();
@@ -257,13 +252,12 @@ int runStaticTest(){
 	int outputpins[32] = {6, 21};
 	int readpins[32] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26, 27};
 	int readmask = generateGPIOReadMask();
-	int outputmask = 0;
 	int groundPins[] = {20, 9, 11, 15, 22, 24, 23};
 
 	for (unsigned int pinIndex= 0; pinIndex < 7; pinIndex++){
 		outputpins[1] = groundPins[pinIndex];
 		resultargs  = pinsToMask(outputpins, readpins, resultargs);
-		outputmask = resultargs[0];
+		int outputmask = resultargs[0];
 		int expectedMask = 1<<20 | 1<<9 | 1<<11 | 1<<15 | 1<<22 | 1<<24;//0;//retrieveExpectedMask(pinIndex,motors);
 //		if((linkConnection == 1) || (groundPins[pinIndex] == 23)){
 //			expectedMask = 1<<23;
@@ -293,9 +287,8 @@ int runStaticTest(){
 		int retryCount = 0;
 
 		//Test Motors
-		int checkNext = 0;
 		for (unsigned int motorIndex = 0; motorIndex < motor.size(); motorIndex++){
-			checkNext = 0;
+			int checkNext = 0;
 			int coilPins[4];
 			int* tempCoilPins = motor[motorIndex].getCoilTracker(0)->getCoil()->getPins();
 //			printf("%d, %d\n",tempCoilPins[0], tempCoilPins[1]);
@@ -599,10 +592,9 @@ int retrieveExpectedMaskCoils(int pin, std::vector<Coil>* c){
 //	int pairIndex = 0;
 //	std::vector<Coil> &p = *pairs;
 	std::vector<Coil> &coilVec = *c;
-	int result = 0;
 	int coilIndex = 0;
 	for(coilIndex = 0; coilIndex < 8; coilIndex++){
-		result = coilVec[coilIndex].getExpectedMask(pin);
+		int result = coilVec[coilIndex].getExpectedMask(pin);
 		if (result != 0){
                        	printf("result: %d\n",result);
                	        result |= 1<<pin;
@@ -644,7 +636,6 @@ int showMenu(){
 }
 
 int checkButtons(){
-	int readResult = 0;
 	int storedResult = 0;
 	const int gpio9 = 1<<9;
 	const int gpio18 = 1<<18;
@@ -654,7 +645,7 @@ int checkButtons(){
 	int pinMask = gpio9 | gpio18 | gpio23 | gpio26;
 
 	while(1){
-		readResult = GPIO_READMULT(pinMask);
+		int readResult = GPIO_READMULT(pinMask);
 		if(readResult!= 0){
 //			printf("Something detected %x\n", readResult);
 			delayMicroseconds(5000);

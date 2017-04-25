@@ -8,11 +8,11 @@ MovingWindow::MovingWindow(int size){
 	windowIndex = 0;
 }
 
-int MovingWindow::getWindowIndex(){
+int MovingWindow::getWindowIndex() const{
 	return windowIndex;
 }
 
-int MovingWindow::getPreviousWindowIndex(){
+int MovingWindow::getPreviousWindowIndex() const{
 	int index = windowIndex - 1;
 	if(windowIndex - 1 < 0){
 		index = data.capacity() - 1;
@@ -20,7 +20,7 @@ int MovingWindow::getPreviousWindowIndex(){
 	return index;
 }
 
-int MovingWindow::getValue(int index){
+int MovingWindow::getValue(int index) const{
 	return data[index];
 }
 
@@ -35,7 +35,7 @@ void MovingWindow::setCurrentValue(int value){
 	}
 }
 
-int MovingWindow::getCurrentValue(){
+int MovingWindow::getCurrentValue() const{
 	return data[windowIndex];
 }
 
