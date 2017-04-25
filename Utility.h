@@ -2,6 +2,7 @@
 #define UTILITY_H
 #include "PJ_RPI.h"
 #include <time.h>
+#include <sys/time.h>
 
 void delayMicroseconds (unsigned int howLong);
 int flashLED(unsigned int duration, unsigned int delayBeforeRead);
@@ -12,7 +13,7 @@ void setPull(int mask, int direction);
 int interrupts(int flag);
 
 
-int flashLED(unsigned int duration, unsigned int delayBeforeRead){
+inline int flashLED(unsigned int duration, unsigned int delayBeforeRead){
 	OUT_GPIO(6);
 	int ledMask = 1 << 6;
 	if(delayBeforeRead > 0){
@@ -30,7 +31,7 @@ int flashLED(unsigned int duration, unsigned int delayBeforeRead){
 	return 0;
 }
 
-void delayMicrosecondsHard (unsigned int howLong)
+inline void delayMicrosecondsHard (unsigned int howLong)
  {
    struct timeval tNow, tLong, tEnd ;
 
@@ -43,7 +44,7 @@ void delayMicrosecondsHard (unsigned int howLong)
      gettimeofday (&tNow, NULL) ;
 }
 
-void delayMicroseconds (unsigned int howLong)
+inline void delayMicroseconds (unsigned int howLong)
  {
    struct timespec sleeper ;
    unsigned int uSecs = howLong % 1000000 ;
@@ -61,19 +62,19 @@ void delayMicroseconds (unsigned int howLong)
    }
  }
 
-void setPullDown(){
+inline void setPullDown(){
 	setPull(0x7FFFFFC,1);
 }
 
-void setPullDownMasked(int mask){
+inline void setPullDownMasked(int mask){
 	setPull(mask, 1);
 }
 
-void setPullUp(int mask){
+inline void setPullUp(int mask){
 	setPull(mask, 2);
 }
 
-void setPull(int mask, int direction){
+inline void setPull(int mask, int direction){
         GPIO_PULL = direction;
         //wait 150 cycles
         delayMicroseconds(5);
@@ -88,7 +89,7 @@ void setPull(int mask, int direction){
 
 }
 
-int bitwiseAverageArray(int array[], int size){
+inline int bitwiseAverageArray(int array[], int size){
 	int bit = 0;
 	int result = 0;
 	int count[32] = {0};
@@ -105,7 +106,7 @@ int bitwiseAverageArray(int array[], int size){
 	return result;
 }
 
-int generateGPIOReadMask(){
+inline int generateGPIOReadMask(){
 	int mask = 0;
 	int readpins[32] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26, 27};
         int i = 0;
@@ -116,7 +117,7 @@ int generateGPIOReadMask(){
 	return mask;
 }
 
-void setAllPinsToInp(){
+inline void setAllPinsToInp(){
 	 int pin = 0;
 	//Set all pins to inputs
 	for(pin=0; pin < 28; pin++){
@@ -125,7 +126,7 @@ void setAllPinsToInp(){
 
 }
 
-int interrupts(int flag)
+inline int interrupts(int flag)
 	{
 	static unsigned int sav131 = 0;
 	static unsigned int sav132 = 0;
@@ -173,6 +174,20 @@ int interrupts(int flag)
 		sav132 = 0;                 // indicates interrupts enabled
 	}
 	return(1);
+}
+
+inline void setOutputs(int outputmask){
+        int pin = 0;
+        int pinmask = 0;
+        int result = 0;
+        for(pin = 0; pin < 32; pin++){
+                pinmask = 1 << pin;
+                result = outputmask & pinmask;
+                if(result > 0){
+                        INP_GPIO(pin);
+                        OUT_GPIO(pin);
+                }
+        }
 }
 
 #endif

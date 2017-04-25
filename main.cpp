@@ -2,6 +2,7 @@
 #include <vector>
 #include <time.h>
 #include <sys/time.h>
+#include <string>
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -13,13 +14,13 @@
 #include "Utility.h"
 #include "ErrorReporting.h"
 #include "LEDChar.h"
+#include "LEDDriver.h"
 
 #define ZEROES_SEEN 19
 #define NREADS 32
 void takeReadings(int nReads, int ReadResult[], int readmask);
 int printReadings(int nReads, int ReadResult[]);
 int* pinsToMask(int* outputPins, int* readPins, int* result);
-void setOutputs(int outputMask);
 std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer);
 std::vector<Coil>* configureCoils(ErrorReporting* errorPointer);
 
@@ -47,11 +48,10 @@ int main()
 	setPullDown();
 
 	setAllPinsToInp();
-	int ledval = 64;
-	LEDChar led[4] = {LEDChar(0,ledval), LEDChar(1,ledval), LEDChar(2,ledval), LEDChar(3,ledval)};
-	int menuOption = 0;
+
+	LEDDriver ledTest = LEDDriver();
 	while(1){
-		menuOption = showMenu();
+		int menuOption = showMenu();
 		float seconds;
 		switch(menuOption){
 			case 1:
@@ -78,33 +78,23 @@ int main()
 				timersub(&stop, &start, &total);
 				seconds = total.tv_usec / 1000000.0;
 				printf("%f seconds passed\n", seconds);
-				setOutputs((1<<26) | (1<<23) | (1<<20) | (1<<9) |(1<<18));
-				led[0].clearRegister();
-				for(int segmentIndex = 0; segmentIndex < 8; segmentIndex++){
-					int ledSelect = 0;
-					int segmentSelect = 0;
-					for (int ledIndex = 0; ledIndex < 4; ledIndex++){
-						int segmentSelectInd = led[ledIndex].decode(segmentIndex);
-						if (segmentSelectInd != 0){
-							ledSelect |= led[ledIndex].ledSelect;
-							segmentSelect = segmentSelectInd;
-						}
-					}
-					GPIO_SET = segmentSelect;
-					delayMicroseconds(1);
-					GPIO_SET = 1<<18;
-					delayMicroseconds(1);
-					GPIO_CLR = 1<<18;
-					GPIO_CLR = segmentSelect;
 
-					GPIO_SET = ledSelect;
-					delayMicroseconds(1);
-					GPIO_SET = 1<<18;
-					delayMicroseconds(1);
-					GPIO_CLR = 1<<18;
-					GPIO_CLR = ledSelect;
-					delayMicroseconds(100);
-				}
+				ledTest.driveDisplay("one");
+				ledTest.driveDisplay("four");
+				ledTest.driveDisplay("nine");
+				ledTest.driveDisplay("test");
+				ledTest.driveDisplay("dead");
+				ledTest.driveDisplay("to ");
+
+				ledTest.driveDisplay("    ");
+				ledTest.driveDisplay(".   ");
+				ledTest.driveDisplay("..  ");
+				ledTest.driveDisplay("... ");
+				ledTest.driveDisplay("....");
+				ledTest.driveDisplay("... ");
+				ledTest.driveDisplay("..  ");
+				ledTest.driveDisplay(".   ");
+				ledTest.driveDisplay("    ");
 
 				break;
 			default:
@@ -320,7 +310,7 @@ int runStaticTest(){
 			int pinIndex = 0;
 			for(pinIndex = 0; (checkNext == 0) && (pinIndex < 4); pinIndex++){
 
-				delayMicroseconds(100);
+				delayMicroseconds(50);
 
 				setOutputs(capPin | 1 << coilPins[pinIndex]);
 				int* arr = readArray[pinIndex];
@@ -367,6 +357,65 @@ int runStaticTest(){
         	               	e.setErrorCode(errorIndex, 0);
 				if(((errorCode & 0xF) != MISSING_COMPONENT) && (errorsPresent == 0)){
 					delayMicroseconds(100);
+					LEDDriver ledTest = LEDDriver();
+					std::string s = "";
+					for(int i = 0; i < 4; i++){
+						int mask = 0xf << (i*4);
+						int value = (errorCode & mask) >> (i*4);
+						switch(value){
+							case 0:
+								s = "0" + s;
+								break;
+							case 1:
+								s = "1" + s;
+								break;
+							case 2:
+								s = "2" + s;
+								break;
+							case 3:
+								s = "3" + s;
+								break;
+							case 4:
+								s = "4" + s;
+								break;
+							case 5:
+								s = "5" + s;
+								break;
+							case 6:
+								s = "6" + s;
+								break;
+							case 7:
+								s = "7" + s;
+								break;
+							case 8:
+								s = "8" + s;
+								break;
+							case 9:
+								s = "9" + s;
+								break;
+							case 10:
+								s = "A" + s;
+								break;
+							case 11:
+								s = "B" + s;
+								break;
+							case 12:
+								s = "C" + s;
+								break;
+							case 13:
+								s = "D" + s;
+								break;
+							case 14:
+								s = "E" + s;
+								break;
+							case 15:
+								s = "F" + s;
+								break;
+
+
+						}
+					}
+					ledTest.driveDisplay(s, 0.5);
 					flashLED(100000, 0);
 					errorsPresent = 1;
 				}
@@ -385,12 +434,12 @@ int runStaticTest(){
                                 return exitCondition;
                         }
                 }
-/**
-//		for (a = 0; a < 7; a ++){
+
+//		for (int a = 0; a < 7; a ++){
 //			delayMicroseconds(100);
 //
-//			setOutputs(t[a].getOutputMask());
-//			GPIO_SET = t[a].getOutputMask();
+//			setOutputs(t[a].getOutputMask() );
+//			GPIO_SET = t[a].getOutputMask() ;
 //
 //			takeReadings(NREADS, t[a].readResult, readmask);
 //			GPIO_CLR = t[a].getOutputMask();
@@ -407,36 +456,34 @@ int runStaticTest(){
 //			}
 //			retryCount = 0;
 //			READ_OK = t[a].compareAll();
-//			exitCode = flashLED(0,1000);
-//			if(exitCode != 0){
-//				return exitCode;
+//			exitCondition = flashLED(0,1000);
+//			if(exitCondition != 0){
+//				return exitCondition;
 //			}
 //
 //			if(READ_OK != 1){
 //				printf("Failed outputmask: %d\n",t[a].getOutputMask());
-//				exitCode = flashLED(100000,1000);
-//				if(exitCode != 0){
-//					return exitCode;
+//				exitCondition = flashLED(100000,1000);
+//				if(exitCondition != 0){
+//					return exitCondition;
 //				}
-				//GPIO_SET = 1<<6;
-				//delayMicroseconds(100000);
-				//GPIO_CLR = 1<<6;
+//				//GPIO_SET = 1<<6;
+//				//delayMicroseconds(100000);
+//				//GPIO_CLR = 1<<6;
 //			}
 //		}
-*/
+//
 	}
 	return 0;
 }
 
 void takeReadings(int nReads, int ReadResult[], int readmask){
 
-//	GPIO_SET = 1<<6;
 	int readcount = 0;
 	for(readcount = 0; readcount < nReads; readcount++){
 
 		ReadResult[readcount] = GPIO_READMULT(readmask);
 	}
-//	GPIO_CLR = 1<<6;
 }
 
 int printReadings(int nReads, int ReadResult[]){
@@ -457,31 +504,12 @@ int*  pinsToMask(int* outputPins, int* readPins, int* result)
         int outputmask = 0;
         int readmask = 0;
         for (i = 0; i < 32; i++) {
-               	if(outputPins[i] != 0){
-//			printf("value is: %d\n", outputPins[i]);
-               	}
 		outputmask |= outputPins[i] == 0 ? 0 : 1 << outputPins[i];
                 readmask |= readPins[i] == 0? 0: 1 << readPins[i];
         }
-//	printf("outputmask pintomask: %d\n", outputmask);
 	result[0] = outputmask;
 	result[1] = readmask;
 	return result;
-}
-
-void setOutputs(int outputmask){
-	int pin = 0;
-	int pinmask = 0;
-	int result = 0;
-	for(pin = 0; pin < 32; pin++){
-		pinmask = 1 << pin;
-		result = outputmask & pinmask;
-		if(result > 0){
-			INP_GPIO(pin);
-			OUT_GPIO(pin);
-//			printf("Pin: %d\n", pin);
-		}
-	}
 }
 
 std::vector<Coil>* configureCoils(ErrorReporting* errorPointer){
