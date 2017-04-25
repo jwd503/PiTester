@@ -2,13 +2,14 @@
 #define LEDCHAR_H
 #include <string.h>
 #include <map>
+#include "Utility.h"
 class LEDChar{
 	private:
 		static const int gpio9 = 1 << 9;
-        	static const int gpio20 = 1 << 20;
-	        static const int gpio23 = 1 << 23;
+        	static const int gpio23 = 1 << 23;
+	        static const int gpio6 = 1 << 6;
 		static std::map<std::string, int> charSet;
-		int segmentSelect;
+		bool colon;
 
 	public:
 
@@ -20,6 +21,7 @@ class LEDChar{
 		int decode(int bit);
 		int segments;
 		int ledSelect;
+		int segmentSelect;
 
 };
 #endif
