@@ -142,16 +142,38 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 	int counter = 0;
 	int a1Result = 0, a2Result = 0, b1Result = 0, b2Result = 0;
 	int i = 0;
+	int pins[] = {pin1, pin2, pin3, pin4};
+	int pinResult[4] = {0};
+	int pinTest[4] = {0};
+	int pinErrorFlag[4] = {0};
+
 	for(i = 12; i < NREADS - 12; i++){
-		a1Result += compareOne(coilA1Reading[i], coilTracker[0].getCoil(), pin1);
-		a2Result += compareOne(coilA2Reading[i], coilTracker[0].getCoil(), pin2);
-		b1Result += compareOne(coilB1Reading[i], coilTracker[1].getCoil(), pin3);
-		b2Result += compareOne(coilB2Reading[i], coilTracker[1].getCoil(), pin4);
+		pinTest[0] = compareOne(coilA1Reading[i], coilTracker[0].getCoil(), pin1);
+		pinTest[1] = compareOne(coilA2Reading[i], coilTracker[0].getCoil(), pin2);
+		pinTest[2] = compareOne(coilB1Reading[i], coilTracker[1].getCoil(), pin3);
+		pinTest[3] = compareOne(coilB2Reading[i], coilTracker[1].getCoil(), pin4);
+
+		for(int pinIndex = 0; pinIndex < 4; pinIndex++){
+			switch(pinTest[pinIndex]){
+				case 0: //Result ok
+					break;
+				case 1: //Short circuit
+					pinErrorFlag[pinIndex] |= 1;
+					break;
+				case 2: //Open circuit
+					pinErrorFlag[pinIndex] |= 2;
+					break;
+			}
+			pinResult[pinIndex] += pinTest[pinIndex];
+		}
 		counter++;
 	}
-//	printf("%d,%d,%d,%d\n",pin1,pin2,pin3,pin4);
 	counter *= 2;
-//	printf("counter: %d\n",counter);
+//	for(int pinIndex = 0; pinIndex < 4; pinIndex++){
+//	}
+
+
+
 	if((a1Result == counter) && (a2Result == counter) && (b1Result == counter) && (b2Result == counter)){
 		// All of the coils were missing
 		int coilLocation = coilTracker[0].getCoil()->location;
@@ -160,37 +182,21 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 		flag = 1;
 	}else{
 
-		if(a1Result != 0){
-//			printf("a1 result: %d\n", a1Result);
-			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin1, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode, frequency);
-			flag = 2;
-		}
+		for(int pinIndex = 0; pinIndex < 4; pinIndex++){
 
-		if(a2Result != 0){
-//			printf("a2 result: %d\n", a2Result);
-			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin2, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode, frequency);
-			flag = 3;
-		}
-
-		if(b1Result != 0){
-//			printf("b1 result: %d\n", b1Result);
-			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin3, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode, frequency);
-			flag = 4;
-			for(int index =0; index < 8; index++){
-				printf("reading[%d]: %d\n", index, coilB1Reading[index]);
+			if((pinErrorFlag[pinIndex] & 1) > 0) { //Short circuit
+				int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pins[pinIndex], ELECTRICAL_SHORT);
+				e->setNextErrorCode(errorCode, frequency);
 			}
 
+			if((pinErrorFlag[pinIndex] & 2) > 0) { //Open circuit
+				int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pins[pinIndex], OPEN_CIRCUIT); //Change to OC code
+				e->setNextErrorCode(errorCode, frequency);
+			}
+			pinResult[pinIndex] += pinTest[pinIndex];
+
 		}
 
-		if(b2Result != 0){
-//			printf("b2 result: %d, pin4: %d\n", b2Result, pin4);
-			int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pin4, ELECTRICAL_SHORT);
-			e->setNextErrorCode(errorCode, frequency);
-			flag = 5;
-		}
 	}
 	return flag;
 }
@@ -203,7 +209,7 @@ int Motor::compareOne(int value, Coil* testCoil, int pin){
 	if ((value & mask) == (expectedResults  & mask)){
 		return 0;
 	} else{
-		printf("observed: %d, expected: %d, pin: %d\n", (value & ~(1 << 6)) ,(expectedResults  & ~(1 << 6)), pin);
+//		printf("observed: %d, expected: %d, pin: %d\n", (value & ~(1 << 6)) ,(expectedResults  & ~(1 << 6)), pin);
 
 		if (value == (1 << pin)){
 			//Potentially open circuit
