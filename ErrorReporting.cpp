@@ -126,6 +126,9 @@ std::string ErrorReporting::generateErrorMessage(int errorCode){
 		case 0x4://coil short to coil
 			problemTypeString = " coil is shorting with another coil";
 			break;
+		case 0x5://coil short to coil
+			problemTypeString = " open circuit was found";
+			break;
 	}
 	return testTypeString + "," + problemDetailString + "," + problemTypeString;
 }

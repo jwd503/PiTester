@@ -33,6 +33,7 @@
 #define MISSING_COMPONENT 2
 #define COIL_SHORT_TO_SELF 3
 #define COIL_TO_COIL 4
+#define OPEN_CIRCUIT 5
 
 class ErrorReporting{
 	private:
