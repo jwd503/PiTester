@@ -280,10 +280,10 @@ int runStaticTest(){
 		int outputmask = resultargs[0];
 		int expectedMask = 1<<20 | 1<<9 | 1<<11 | 1<<15 | 1<<22 | 1<<24;//0;//retrieveExpectedMask(pinIndex,motors);
 //		if((linkConnection == 1) || (groundPins[pinIndex] == 23)){
-//			expectedMask = 1<<23;
+			expectedMask |= 1<<23;
 //		}
 		printf("expected: %d, %d\n",expectedMask,groundPins[pinIndex]);
-		t.push_back(TestCase(outputmask, expectedMask));
+		t.push_back(TestCase(outputmask, expectedMask, &e));
 		printf("Expected result for test %d: %d\n", groundPins[pinIndex], t[pinIndex].getExpectedResult());
 	}
 
@@ -301,7 +301,6 @@ int runStaticTest(){
 
 	LEDDriver display = LEDDriver();
 	display.driveDisplay("Stat",2);
-
 	while(1){
 
 		volatile int READ_OK = 0;
@@ -361,6 +360,45 @@ int runStaticTest(){
 			}
 
 		}
+		for (int a = 0; a < 7; a ++){
+			delayMicroseconds(200);
+
+			int outMask = t[a].getOutputMask();
+			setOutputs(outMask);
+			GPIO_SET = outMask;
+
+			takeReadings(NREADS, t[a].readResult, readmask);
+			GPIO_CLR = outMask;
+			outMask = ~(1<<6) & outMask;
+			for( int i = 0; i < 32; i++){
+				int pin = ((1<<i) & outMask) >> i;
+//				printf("pin %d, i\n", pin, i)
+				if(pin == 1) INP_GPIO(i);
+			}
+			READ_OK = printReadings(NREADS, t[a].readResult);
+
+			if (READ_OK != 1){
+				if(retryCount < 2){
+					a--;
+					retryCount++;
+				}
+				continue;
+			}
+			retryCount = 0;
+			READ_OK = t[a].compareAll();
+
+			if(READ_OK != 0){
+				printf("Failed outputmask: %d\n",t[a].getOutputMask());
+				//exitCondition = flashLED(100000,1000);
+				//if(exitCondition != 0){
+			//		return exitCondition;
+			//	}
+				//GPIO_SET = 1<<6;
+				//delayMicroseconds(100000);
+				//GPIO_CLR = 1<<6;
+			}
+		}
+
 
 		int errorIndex = 0;
 		int errorsPresent = 0;
@@ -451,44 +489,6 @@ int runStaticTest(){
                         }
                 }
 
-//		for (int a = 0; a < 7; a ++){
-//			delayMicroseconds(100);
-//
-//			setOutputs(t[a].getOutputMask() );
-//			GPIO_SET = t[a].getOutputMask() ;
-//
-//			takeReadings(NREADS, t[a].readResult, readmask);
-//			GPIO_CLR = t[a].getOutputMask();
-//			INP_GPIO(a);
-//
-//			READ_OK = printReadings(NREADS, t[a].readResult);
-//
-//			if (READ_OK != 1){
-//				if(retryCount < 2){
-//					a--;
-//					retryCount++;
-//				}
-//				continue;
-//			}
-//			retryCount = 0;
-//			READ_OK = t[a].compareAll();
-//			exitCondition = flashLED(0,1000);
-//			if(exitCondition != 0){
-//				return exitCondition;
-//			}
-//
-//			if(READ_OK != 1){
-//				printf("Failed outputmask: %d\n",t[a].getOutputMask());
-//				exitCondition = flashLED(100000,1000);
-//				if(exitCondition != 0){
-//					return exitCondition;
-//				}
-//				//GPIO_SET = 1<<6;
-//				//delayMicroseconds(100000);
-//				//GPIO_CLR = 1<<6;
-//			}
-//		}
-//
 	}
 	return 0;
 }
