@@ -116,7 +116,6 @@ void LEDDriver::driveDisplay(const std::string word){
 	int iterations = 125 * duration;
 	decodeWord(word);
 	setOutputs((1<<26) | (1<<23) | (1<<6) | (1<<9) |(1<<18));
-	LEDChars[0].clearRegister();
 	for(int i = 0; i < iterations; i++){
 		setDisplay();
 	}
@@ -128,7 +127,6 @@ void LEDDriver::driveDisplay(const std::string word, float duration){
 	int iterations = 125 * duration;
 	decodeWord(word);
 	setOutputs((1<<26) | (1<<23) | (1<<6) | (1<<9) |(1<<18));
-	LEDChars[0].clearRegister();
 	for(int i = 0; i < iterations; i++){
 		setDisplay();
 	}

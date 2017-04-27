@@ -1,6 +1,5 @@
 #include "LEDChar.h"
 #include "PJ_RPI.h"
-//#include "Utility.h"
 
 LEDChar::LEDChar(int index, int segments){
 	segmentSelect = 0;
@@ -71,6 +70,7 @@ int LEDChar::getLEDPins(){
 }
 
 void LEDChar::clearRegister(){
+	//set the shift register pins to outputs
 	INP_GPIO(9);
 	OUT_GPIO(9);
 	INP_GPIO(18);
@@ -82,12 +82,20 @@ void LEDChar::clearRegister(){
 	INP_GPIO(26);
 	OUT_GPIO(26);
 
+	//Reset the shift register values
 	GPIO_CLR = getLEDPins();
-//	delayMicroseconds(10);
 	GPIO_SET = 1<<18;
 	GPIO_CLR = 1<<18;
 	GPIO_SET = 1<<18;
 	GPIO_CLR = 1<<18;
+
+	//Set the pins back to input mode
+	INP_GPIO(9);
+	INP_GPIO(18);
+	INP_GPIO(6);
+	INP_GPIO(23);
+	INP_GPIO(26);
+
 }
 
 int LEDChar::decode(int bit){
