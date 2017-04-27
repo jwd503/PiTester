@@ -47,10 +47,12 @@ int main()
 	int readmask = generateGPIOReadMask();
 	setPullDown();
 
-	setAllPinsToInp();
 
 	LEDDriver ledTest = LEDDriver();
 	while(1){
+		ledTest.driveDisplay("sel ",2);
+		setAllPinsToInp();
+
 		int menuOption = showMenu();
 		float seconds;
 		switch(menuOption){
@@ -118,6 +120,9 @@ int runDynamicTest(int readmask){
 	int exitCondition = 0;
 	OUT_GPIO(6);
 	printf("%d motors to check\n", motor.size());
+	LEDDriver display = LEDDriver();
+	display.driveDisplay("Dyn ", 2);
+
 	while(1)
 	{
 		int readResult[1] = {0};
@@ -192,12 +197,14 @@ int runOptoTest(){
 	int prevPioValues[4] = {0};
 	int pullUpMask = (1<< 22) | (1<<11);
 	setPullUp(pullUpMask);
+	LEDDriver display = LEDDriver();
+	display.driveDisplay("OPTO", 2);
 	while(1)
 	{
 		delayMicroseconds(100);
 
 		int readResult = GPIO_READMULT(readmask);
-
+		std::string ledText = "";
 		//single out the pioPins
 		int pioChanged = 0;
 		for(int pioIndex = 0; pioIndex < 4; pioIndex++){
@@ -212,6 +219,18 @@ int runOptoTest(){
 				pioChanged = 1;
                         }
 
+			switch(pioValues[pioIndex]){
+				case 0:
+					ledText += "0";
+					break;
+				case 1:
+					ledText += "1";
+					break;
+				default:
+					ledText += " ";
+					break;
+			}
+
 		}
 
 		if (pioChanged ==1){
@@ -220,6 +239,7 @@ int runOptoTest(){
 
 		lastReading = readResult;
 
+		display.driveDisplay(ledText, 0.01);
 		//Check if any buttons have been pressed
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
@@ -278,6 +298,9 @@ int runStaticTest(){
 	int motorFlag = 0;
 	int exitCondition = 0;
 	printf("Got to end of init\n");
+
+	LEDDriver display = LEDDriver();
+	display.driveDisplay("Stat",2);
 
 	while(1){
 
