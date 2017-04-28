@@ -8,10 +8,11 @@ class TestCase{
 	private:
 		int expectedResult;
 		int outputMask;
+		int ignoreMask;
 	public:
 		int readResult[NREADS];
 		ErrorReporting* e;
-		TestCase(int outputMask, int expectedResult, ErrorReporting* e);
+		TestCase(int outputMask, int expectedResult, int ignoreMask, ErrorReporting* e);
 		void setReads(int nReads);
 		int compareAll();
 		int compareOne(int id);

@@ -1,7 +1,8 @@
 #include "TestCase.h"
 #include <stdio.h>
-TestCase::TestCase(int outputMask, int expectedResult, ErrorReporting* errorPointer):
+TestCase::TestCase(int outputMask, int expectedResult, int ignoreMask, ErrorReporting* errorPointer):
 	readResult{0}{
+	this->ignoreMask = ignoreMask;
 	this->outputMask = outputMask;
 	this->expectedResult = expectedResult;
 	e = errorPointer;
@@ -12,7 +13,7 @@ int TestCase::compareAll(){
 	int i = 0;
 	int result = 0;
 	//Skip the first result as signal propagation errors show up here
-	for(i = 8; i < NREADS-12; i++){
+	for(i = 8; i < NREADS; i++){
 		int tempResult = compareOne(i);
 		if(tempResult != 0){
 //			printf("Read no:%d\n", i);
@@ -45,13 +46,13 @@ int TestCase::compareOne(int id){
 	if(id >= NREADS){ //invalid id provided
 		return 1;
 	}
-
 	int mask = ~(1<<6);
+
 	//Result ok
-	if ((readResult[id] & mask) == (expectedResult  & mask)){
+	if (((readResult[id] & mask)|ignoreMask) == ((expectedResult  & mask))|ignoreMask){
 		return 0;
 	} else{
-//		printf("observed: %d, expected: %d\n", (readResult[id] & ~(1 << 6)) ,(expectedResult  & ~(1 << 6)));
+		printf("observed: %d, expected: %d\n", (readResult[id] & ~(1 << 6)) ,(expectedResult  & ~(1 << 6)));
 		if(readResult[id] == outputMask){
 			return 2;//Open circuit
 		}else{

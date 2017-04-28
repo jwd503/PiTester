@@ -273,18 +273,29 @@ int runStaticTest(){
 	int readpins[32] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26, 27};
 	int readmask = generateGPIOReadMask();
 	int groundPins[] = {20, 9, 11, 15, 22, 24, 23};
-
+	int unconnectedPins[] = {6, 18, 26};
+	//Initializes tests for capacitively coupled opto pins
 	for (unsigned int pinIndex= 0; pinIndex < 7; pinIndex++){
 		outputpins[1] = groundPins[pinIndex];
 		resultargs  = pinsToMask(outputpins, readpins, resultargs);
 		int outputmask = resultargs[0];
-		int expectedMask = 1<<20 | 1<<9 | 1<<11 | 1<<15 | 1<<22 | 1<<24;//0;//retrieveExpectedMask(pinIndex,motors);
-//		if((linkConnection == 1) || (groundPins[pinIndex] == 23)){
-			expectedMask |= 1<<23;
-//		}
+		int expectedMask = 1<<9 | 1<<11 | 1<<15 | 1<<20 | 1<<22 | 1<<23 |1<<24;
+
 		printf("expected: %d, %d\n",expectedMask,groundPins[pinIndex]);
-		t.push_back(TestCase(outputmask, expectedMask, &e));
+		t.push_back(TestCase(outputmask, expectedMask, expectedMask, &e));
 		printf("Expected result for test %d: %d\n", groundPins[pinIndex], t[pinIndex].getExpectedResult());
+	}
+
+	//Initializes tests for unconnected pins
+	for (unsigned int pinIndex= 0; pinIndex < 3; pinIndex++){
+		outputpins[1] = unconnectedPins[pinIndex];
+		resultargs  = pinsToMask(outputpins, readpins, resultargs);
+		int outputmask = resultargs[0];
+		int expectedMask = outputmask;
+
+		printf("expected: %d, %d\n",expectedMask,groundPins[pinIndex]);
+		t.push_back(TestCase(outputmask, expectedMask, 0, &e));
+		printf("Expected result for test %d: %d\n", unconnectedPins[pinIndex], t[pinIndex].getExpectedResult());
 	}
 
 	setAllPinsToInp();
@@ -360,7 +371,7 @@ int runStaticTest(){
 			}
 
 		}
-		for (int a = 0; a < 7; a ++){
+		for (int a = 0; a < 11; a ++){
 			delayMicroseconds(200);
 
 			int outMask = t[a].getOutputMask();
@@ -471,7 +482,7 @@ int runStaticTest(){
 					}
 					ledTest.driveDisplay(s, 0.5);
 					flashLED(100000, 0);
-					errorsPresent = 1;
+//					errorsPresent = 1;
 				}
 				errorcount++;
                      	}
