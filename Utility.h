@@ -18,7 +18,7 @@ inline int flashLED(unsigned int duration, unsigned int delayBeforeRead){
 	int ledMask = 1 << 6;
 	if(delayBeforeRead > 0){
 		delayMicroseconds(delayBeforeRead);
-		int result = GPIO_READMULT(0x4840200);
+		int result = GPIO_READMULT((1<<9)|(1<<18)|(1<<23)|(1<<26));
 		if(result != 0){
 			printf("Whoops\n");
 			return 1;
