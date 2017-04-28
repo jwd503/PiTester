@@ -66,19 +66,8 @@ LEDDriver::LEDDriver(){
 void LEDDriver::decodeWord(std::string word){
 	//This only checks the first 4 chars of the string parsed as there are only 4 LED displays
 	for(int charIndex = 0; charIndex < 4; charIndex++){
-		//Fetch the char and cast as a string
-//		std::string s(1,word[charIndex]);
+		//Fetch the char from the lookup table and set the appropriate segments
 		LEDChars[charIndex].setSegments(sevsegascii_table[(int)word[charIndex]]);
-		//if the following condition is met the key was found in the mapping
-//		if(charSet.find(s) != charSet.end()){
-//			printf("word[%d]: %x\n", charIndex, charSet.at(s));
-			//Set the LEDs segments to display to the value from the mapping
-//			LEDChars[charIndex].setSegments(charSet.at(s));
-//		}else{
-			//Couldn't find a mapping for this character so set blank instead
-//			LEDChars[charIndex].setSegments(0);
-//		}
-
 	}
 }
 
@@ -112,14 +101,7 @@ void LEDDriver::setDisplay(){
 }
 
 void LEDDriver::driveDisplay(const std::string word){
-	float duration = 0.3;
-	int iterations = 125 * duration;
-	decodeWord(word);
-	setOutputs((1<<26) | (1<<23) | (1<<6) | (1<<9) |(1<<18));
-	for(int i = 0; i < iterations; i++){
-		setDisplay();
-	}
-	LEDChars[0].clearRegister();
+	driveDisplay(word, 0.3);
 
 }
 
