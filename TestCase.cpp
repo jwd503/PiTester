@@ -22,21 +22,29 @@ int TestCase::compareAll(){
 	}
 
 	int pin = outputMask & ~(1<<6);
-	int pinIndex = 0;
-	for(pinIndex = 0; pinIndex< 32; pinIndex++){
+	pin &= 0x7FFFFFC;//pins 2-26
+	int pinCounter = 0;
+	bool pinFound = false;
+	for(int pinIndex = 0; pinIndex< 32 && pinFound; pinIndex++){
 		if( (pin & (1<<pinIndex)) > 0){
-			break;
+			pinFound = true;
+		}else{
+			pinCounter++;
 		}
 	}
-
-	if((result & 1) > 0) { //Short circuit
-		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinIndex, ELECTRICAL_SHORT);
+	pinCounter--;
+	if(((result & 0x1) > 0) && pinFound) { //Short circuit
+		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, ELECTRICAL_SHORT);
 		e->setNextErrorCode(errorCode, 100.0);
+		printf("pinIndex: %d\n",pinCounter);
+
 	}
 
-	if((result & 2) > 0) { //Open circuit
-		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinIndex, OPEN_CIRCUIT); //Change to OC code
+	if(((result & 0x2) > 0) && pinFound) { //Open circuit
+		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, OPEN_CIRCUIT); //Change to OC code
 		e->setNextErrorCode(errorCode, 100.0);
+		printf("pinIndex: %d\n",pinCounter);
+
 	}
 
 	return result;
