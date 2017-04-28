@@ -21,12 +21,9 @@
 void takeReadings(int nReads, int ReadResult[], int readmask);
 int printReadings(int nReads, int ReadResult[]);
 int* pinsToMask(int* outputPins, int* readPins, int* result);
-std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer);
-std::vector<Coil>* configureCoils(ErrorReporting* errorPointer);
 
 std::vector<Motor>* configureMotors(ErrorReporting* errorPointer);
-int retrieveExpectedMask(int pin, std::vector<Motor>* m);
-int retrieveExpectedMaskCoils(int pin, std::vector<Coil>* c);
+
 void setPullDown();
 int showMenu();
 int checkButtons();
@@ -138,9 +135,6 @@ int runDynamicTest(int readmask){
 			errorFlag |= motor[motorIndex].updateCoils(sample[sampleIndex]);
 		}
 
-		//if(errorFlag > 0){
-		//	flashLED(100000, 0);
-		//}
 		int errorIndex = 0;
 		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 			int errorCode = e.getErrorCode(errorIndex);
@@ -148,10 +142,7 @@ int runDynamicTest(int readmask){
 				if(e.errorVec[errorIndex] != 0){
 
 					if((e.errorVec[errorIndex]->frequency > 30)){
-						printf("freq: %f\n", ((e.errorVec[errorIndex])->frequency));
-						//std::cout << e.errorVec[errorIndex]->frequency;
 						printf("sampleIndex: %d\n", sampleIndex);
-						//e.printGpioHistory(errorIndex);//index is auto incremented
 						printf(e.generateErrorMessage(errorCode).c_str());
 						printf("\nerrorCode: %x\n",errorCode);
 						flashLED(100000, 0);
@@ -310,6 +301,9 @@ int runStaticTest(){
 	int exitCondition = 0;
 	printf("Got to end of init\n");
 
+	int motorMissing[4] = {0};
+	bool missingFlag = false;
+
 	LEDDriver display = LEDDriver();
 	display.driveDisplay("Stat",2);
 	while(1){
@@ -400,13 +394,6 @@ int runStaticTest(){
 
 			if(READ_OK != 0){
 				printf("Failed outputmask: %d\n",t[a].getOutputMask());
-				//exitCondition = flashLED(100000,1000);
-				//if(exitCondition != 0){
-			//		return exitCondition;
-			//	}
-				//GPIO_SET = 1<<6;
-				//delayMicroseconds(100000);
-				//GPIO_CLR = 1<<6;
 			}
 		}
 
@@ -417,10 +404,26 @@ int runStaticTest(){
 		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 	        	int errorCode = e.getErrorCode(errorIndex);
        		        if (errorCode != 0){
-               			printf(e.generateErrorMessage(errorCode).c_str());
-	                        printf("\nerrorCode: %x\n",errorCode);
-        	               	e.setErrorCode(errorIndex, 0);
-				if(((errorCode & 0xF) != MISSING_COMPONENT) && (errorsPresent == 0)){
+	       	               	e.setErrorCode(errorIndex, 0);
+
+				bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
+
+				if (isMissing){
+					int motorIndex = (errorCode & (0x3F << 4)) >> 4;
+
+					motorMissing[motorIndex]--;
+					if(motorMissing[motorIndex] <=  0){
+						motorMissing[motorIndex] = 500;
+						missingFlag = true;
+					}else{
+						missingFlag = false;
+					}
+				}
+
+				if (missingFlag || !isMissing){
+		   			printf(e.generateErrorMessage(errorCode).c_str());
+		                        printf("\nerrorCode: %x\n",errorCode);
+
 					delayMicroseconds(100);
 					LEDDriver ledTest = LEDDriver();
 					std::string s = "";
@@ -480,21 +483,22 @@ int runStaticTest(){
 
 						}
 					}
-					ledTest.driveDisplay(s, 0.5);
 					flashLED(100000, 0);
+					ledTest.driveDisplay(s, 0.5);
+
 //					errorsPresent = 1;
 				}
 				errorcount++;
                      	}
                 }
 		if(errorcount != 0){
-			printf("ErrorCodeCount:%d\n", errorcount);
+//			printf("ErrorCodeCount:%d\n", errorcount);
 		}
 
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
                 exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
                 if(exitRead  != 0){
-                        exitCondition = flashLED(0,1000);//checkButtons();
+                        exitCondition = flashLED(0,1000);
                         if(exitCondition != 0){
                                 return exitCondition;
                         }
@@ -539,40 +543,6 @@ int*  pinsToMask(int* outputPins, int* readPins, int* result)
 	return result;
 }
 
-std::vector<Coil>* configureCoils(ErrorReporting* errorPointer){
-	static std::vector<Coil> c;
-	c.erase(c.begin(), c.end());
-
-	c.reserve(8);
-	c.push_back(Coil(2,3,"M2.A",M2A,errorPointer));//
-        c.push_back(Coil(4,12,"M0.A",M0A,errorPointer));//
-        c.push_back(Coil(14,16,"M0.B",M0B,errorPointer));//
-        c.push_back(Coil(17,27,"M2.B",M2B,errorPointer));//
-        c.push_back(Coil(10,5,"M3.A",M3A,errorPointer));//
-        c.push_back(Coil(19,13,"M3.B",M3B,errorPointer));//
-        c.push_back(Coil(21,25,"M1.A",M1A,errorPointer));//
-        c.push_back(Coil(7,8,"M1.B",M1B,errorPointer));//
-	return &c;
-
-}
-
-std::vector<CoilTracker>* configureCoilTracker(ErrorReporting* errorPointer){
-	static std::vector<CoilTracker> mP;
-	mP.erase(mP.begin(), mP.end());
-
-	mP.reserve(8);
-	mP.push_back(CoilTracker(2,3,"M2.A",M2A,errorPointer, 32));//
-	mP.push_back(CoilTracker(4,12,"M0.A",M0A,errorPointer,32));//
-	mP.push_back(CoilTracker(14,16,"M0.B",M0B,errorPointer,32));//
-	mP.push_back(CoilTracker(17,27,"M2.B",M2B,errorPointer,32));//
-	mP.push_back(CoilTracker(10,5,"M3.A",M3A,errorPointer,32));//
-	mP.push_back(CoilTracker(19,13,"M3.B",M3B,errorPointer,32));//
-	mP.push_back(CoilTracker(21,25,"M1.A",M1A,errorPointer,32));//
-	mP.push_back(CoilTracker(7,8,"M1.B",M1B,errorPointer,32));//
-
-	return &mP;
-}
-
 std::vector<Motor>* configureMotors(ErrorReporting* errorPointer){
 	static std::vector<Motor> motorArray;
 	motorArray.erase(motorArray.begin(), motorArray.end());
@@ -584,75 +554,6 @@ std::vector<Motor>* configureMotors(ErrorReporting* errorPointer){
 	motorArray.push_back(Motor(10,5,"M3.A",M3A,19,13,"M3.B",M3B, errorPointer));
 
 	return &motorArray;
-}
-
-int retrieveExpectedMask(int pin, std::vector<Motor>* m){
-//	int pairIndex = 0;
-//	std::vector<Coil> &p = *pairs;
-	std::vector<Motor> &motorVec = *m;
-	int result = 0;
-	int motorIndex = 0;
-	for(motorIndex = 0; motorIndex < 4; motorIndex++){
-		int trackerIndex = 0;
-		for(trackerIndex = 0; trackerIndex < 2; trackerIndex++){
-			result = motorVec[motorIndex].getCoilTracker(trackerIndex)->getCoil()->getExpectedMask(pin);
-			if (result != 0){
-	                       	printf("result: %d\n",result);
-                	        result |= 1<<pin;
-        	                return result;
-	                }
-		}
-	}
-	//Not a motor pairing
-	//GPIO20 = GND
-	//GND-> GPIO15, GPIO22, GPIO9, GPIO5, GPIO24
-	//20,15
-	//20,22
-	//20,2
-	//20,5
-	//20,24
-	switch(pin){
-		case 20:
-		case 9:
-		case 11:
-		case 15:
-		case 22:
-		case 24:
-			return	(1<<20 | 1<<11 |1 << 9 | 1<<15 | 1<<22 | 1<<24);
-	}
-	return 1<<pin;
-}
-int retrieveExpectedMaskCoils(int pin, std::vector<Coil>* c){
-//	int pairIndex = 0;
-//	std::vector<Coil> &p = *pairs;
-	std::vector<Coil> &coilVec = *c;
-	int coilIndex = 0;
-	for(coilIndex = 0; coilIndex < 8; coilIndex++){
-		int result = coilVec[coilIndex].getExpectedMask(pin);
-		if (result != 0){
-                       	printf("result: %d\n",result);
-               	        result |= 1<<pin;
-       	                return result;
-                }
-	}
-	//Not a motor pairing
-	//GPIO20 = GND
-	//GND-> GPIO15, GPIO22, GPIO9, GPIO5, GPIO24
-	//20,15
-	//20,22
-	//20,2
-	//20,5
-	//20,24
-	switch(pin){
-		case 20:
-		case 9:
-		case 11:
-		case 15:
-		case 22:
-		case 24:
-			return	(1<<20 | 1<<11 |1 << 9 | 1<<15 | 1<<22 | 1<<24);
-	}
-	return 1<<pin;
 }
 
 int showMenu(){
@@ -711,8 +612,6 @@ int checkButtons(){
 		case gpio26: //0x4000000: //GPIO26
 			returnValue = 4;
 			break;
-//		default:
-//			printf("Press fewer buttons\n");
 	}
 	return returnValue;
 }
