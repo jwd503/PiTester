@@ -365,7 +365,7 @@ int runStaticTest(){
 			}
 
 		}
-		for (int a = 0; a < 11; a ++){
+		for (int a = 0; a < 10; a ++){
 			delayMicroseconds(200);
 
 			int outMask = t[a].getOutputMask();
@@ -405,6 +405,8 @@ int runStaticTest(){
 	        	int errorCode = e.getErrorCode(errorIndex);
        		        if (errorCode != 0){
 	       	               	e.setErrorCode(errorIndex, 0);
+				delete e.errorVec[errorIndex];
+				e.errorVec[errorIndex] = 0;
 
 				bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
 
@@ -422,10 +424,10 @@ int runStaticTest(){
 
 				if (missingFlag || !isMissing){
 		   			printf(e.generateErrorMessage(errorCode).c_str());
+
 		                        printf("\nerrorCode: %x\n",errorCode);
 
 					delayMicroseconds(100);
-					LEDDriver ledTest = LEDDriver();
 					std::string s = "";
 					for(int i = 0; i < 4; i++){
 						int mask = 0xf << (i*4);
@@ -484,7 +486,7 @@ int runStaticTest(){
 						}
 					}
 					flashLED(100000, 0);
-					ledTest.driveDisplay(s, 0.5);
+					display.driveDisplay(s, 0.5);
 
 //					errorsPresent = 1;
 				}
