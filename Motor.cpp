@@ -140,7 +140,7 @@ int Motor::updateCoils(int gpioReading){
 int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin2, int coilB1Reading[], int pin3, int coilB2Reading[], int pin4){
 	int flag = 0;
 	int counter = 0;
-	int a1Result = 0, a2Result = 0, b1Result = 0, b2Result = 0;
+
 	int i = 0;
 	int pins[] = {pin1, pin2, pin3, pin4};
 	int pinResult[4] = {0};
@@ -174,7 +174,7 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 
 
 
-	if((a1Result == counter) && (a2Result == counter) && (b1Result == counter) && (b2Result == counter)){
+	if((pinResult[0] == counter) && (pinResult[1] == counter) && (pinResult[2] == counter) && (pinResult[3] == counter)){
 		// All of the coils were missing
 		int coilLocation = coilTracker[0].getCoil()->location;
 		int errorCode = e->generateErrorCode(STATIC_TEST, MOTOR_LEVEL, coilLocation /2, MISSING_COMPONENT);
