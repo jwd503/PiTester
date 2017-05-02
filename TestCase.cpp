@@ -20,34 +20,40 @@ int TestCase::compareAll(){
 		}
 		result |= tempResult;
 	}
-
 	int pin = outputMask & ~(1<<6);
-	pin &= 0x7FFFFFC;//pins 2-26
+	pin = pin & 0x7FFFFFC;//pins 2-26
 	int pinCounter = 0;
 	bool pinFound = false;
-	for(int pinIndex = 0; pinIndex< 32 && pinFound; pinIndex++){
-		if( (pin & (1<<pinIndex)) > 0){
+	for(int pinIndex = 0; pinIndex< 32; pinIndex++){
+		if( (pin & (1<<pinIndex)) != 0){
 			pinFound = true;
+			break;
 		}else{
 			pinCounter++;
 		}
 	}
-	pinCounter--;
-	if(((result & 0x1) > 0) && pinFound) { //Short circuit
+
+	if ((outputMask != 0) && ((outputMask & ~(1<<6)) == 0)){
+		//pin 6
+		pinFound = true;
+		pinCounter = 6;
+	}
+
+	if(((result & 0x1) != 0) && pinFound) { //Short circuit
 		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, ELECTRICAL_SHORT);
 		e->setNextErrorCode(errorCode, 100.0);
-		printf("pinIndex: %d\n",pinCounter);
+		printf("pinCounter: %d\n",pinCounter);
 
 	}
 
-	if(((result & 0x2) > 0) && pinFound) { //Open circuit
+	if(((result & 0x2) != 0) && pinFound) { //Open circuit
 		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, OPEN_CIRCUIT); //Change to OC code
 		e->setNextErrorCode(errorCode, 100.0);
-		printf("pinIndex: %d\n",pinCounter);
+		printf("pinCounter: %d\n",pinCounter);
 
 	}
 
-	return result;
+	return result  != 0  ? 1: 0;
 }
 
 int TestCase::compareOne(int id){
@@ -57,7 +63,10 @@ int TestCase::compareOne(int id){
 	int mask = ~(1<<6);
 
 	//Result ok
-	if (((readResult[id] & mask)|ignoreMask) == ((expectedResult  & mask))|ignoreMask){
+	int maskedInput = readResult[id] & mask;
+	int maskedOutput = expectedResult & mask;
+
+	if ((maskedInput|ignoreMask) == (maskedOutput|ignoreMask)){
 		return 0;
 	} else{
 		printf("observed: %d, expected: %d\n", (readResult[id] & ~(1 << 6)) ,(expectedResult  & ~(1 << 6)));
