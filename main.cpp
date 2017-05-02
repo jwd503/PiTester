@@ -130,13 +130,12 @@ int runDynamicTest(int readmask){
 		sample[sampleIndex] = bitwiseAverageArray(readResult, dynamicReads);
 
 		int errorFlag = 0;
-		for(unsigned int motorIndex = 0; motorIndex < motor.size(); motorIndex++){
+		for(unsigned char motorIndex = 0; motorIndex < motor.size(); motorIndex++){
 			motor[motorIndex].updateState(sample[sampleIndex]);
 			errorFlag |= motor[motorIndex].updateCoils(sample[sampleIndex]);
 		}
 
-		int errorIndex = 0;
-		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
+		for(unsigned char errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
 				if(e.errorVec[errorIndex] != 0){
@@ -263,7 +262,7 @@ int runStaticTest(){
 	int outputpins[32] = {6, 21};
 	int readpins[32] = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26, 27};
 	int readmask = generateGPIOReadMask();
-	int groundPins[] = {20, 9, 11, 15, 22, 24, 23};
+	int groundPins[] = {20, 9, 11, 15, 22, 23, 24};
 	int unconnectedPins[] = {6, 18, 26};
 	//Initializes tests for capacitively coupled opto pins
 	for (unsigned int pinIndex= 0; pinIndex < 7; pinIndex++){
@@ -330,7 +329,7 @@ int runStaticTest(){
 			int pinIndex = 0;
 			for(pinIndex = 0; (checkNext == 0) && (pinIndex < 4); pinIndex++){
 
-				delayMicroseconds(50);
+				delayMicroseconds(100);
 
 				setOutputs(capPin | 1 << coilPins[pinIndex]);
 				int* arr = readArray[pinIndex];
@@ -366,8 +365,8 @@ int runStaticTest(){
 
 		}
 		for (int a = 0; a < 10; a ++){
-			delayMicroseconds(200);
-
+			delayMicroseconds(100);
+			if(a == 7) delayMicroseconds(300);
 			int outMask = t[a].getOutputMask();
 			setOutputs(outMask);
 			GPIO_SET = outMask;
@@ -399,7 +398,6 @@ int runStaticTest(){
 
 
 		int errorIndex = 0;
-		int errorsPresent = 0;
 		int errorcount = 0;
 		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 	        	int errorCode = e.getErrorCode(errorIndex);
