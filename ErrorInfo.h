@@ -26,6 +26,7 @@ class ErrorInfo{
 
 		std::vector<std::string> ledOut;
 		void dumpToFile(const char* filename);
+		int getErrorCode();
 		float frequency;
 
 };

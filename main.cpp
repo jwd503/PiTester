@@ -135,24 +135,18 @@ int runDynamicTest(int readmask){
 			errorFlag |= motor[motorIndex].updateCoils(sample[sampleIndex]);
 		}
 
-		for(unsigned char errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
-			int errorCode = e.getErrorCode(errorIndex);
-			if (errorCode != 0){
-				if(!e.errorVec.empty()){
-
-					if((e.errorVec.front()->frequency > 30)){
-						printf("sampleIndex: %d\n", sampleIndex);
-						printf(e.generateErrorMessage(errorCode).c_str());
-						printf("\nerrorCode: %x\n",errorCode);
-						flashLED(100000, 0);
-					}
-					e.setErrorCode(errorIndex, 0);
-					delete e.errorVec.front();
-					e.errorVec.pop();
-				}
-
+		for(unsigned char errorIndex = 0; errorIndex < e.errorVec.size(); errorIndex++){
+			int errorCode = e.errorVec.front()->getErrorCode();
+			if((e.errorVec.front()->frequency > 30)){
+				printf("sampleIndex: %d\n", sampleIndex);
+				printf(e.generateErrorMessage(errorCode).c_str());
+				printf("\nerrorCode: %x\n",errorCode);
+				flashLED(100000, 0);
 			}
+			delete e.errorVec.front();
+			e.errorVec.pop();
 		}
+
 		sampleIndex++;
 		if(sampleIndex > 10000) sampleIndex = 0;
 
@@ -397,48 +391,42 @@ int runStaticTest(){
 		}
 
 
-		int errorIndex = 0;
 		int errorcount = 0;
-		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
-	        	int errorCode = e.getErrorCode(errorIndex);
-       		        if (errorCode != 0){
+		for(unsigned int errorIndex = 0; errorIndex < e.errorVec.size(); errorIndex++){
+	        	int errorCode = e.errorVec.front()->getErrorCode();
+			bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
 
-				bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
+			if (isMissing){
+				int motorIndex = (errorCode & (0x3F << 4)) >> 4;
 
-				if (isMissing){
-					int motorIndex = (errorCode & (0x3F << 4)) >> 4;
-
-					motorMissing[motorIndex]--;
-					if(motorMissing[motorIndex] <=  0){
-						motorMissing[motorIndex] = 500;
-						missingFlag = true;
-					}else{
-						missingFlag = false;
-					}
+				motorMissing[motorIndex]--;
+				if(motorMissing[motorIndex] <=  0){
+					motorMissing[motorIndex] = 500;
+					missingFlag = true;
+				}else{
+					missingFlag = false;
 				}
+			}
 
-				if (missingFlag || !isMissing){
-		   			printf(e.generateErrorMessage(errorCode).c_str());
+			if (missingFlag || !isMissing){
+	   			printf(e.generateErrorMessage(errorCode).c_str());
+	                        printf("\nerrorCode: %x\n",errorCode);
 
-		                        printf("\nerrorCode: %x\n",errorCode);
-
-					flashLED(100000, 0);
-					ErrorInfo &eRef = *e.errorVec.front();
-					for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
-						std::string ledString = eRef.ledOut[messageIndex];
-						display.driveDisplay(ledString, 0.3);
-
-					}
+				flashLED(100000, 0);
+				ErrorInfo &eRef = *e.errorVec.front();
+				for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
+					std::string ledString = eRef.ledOut[messageIndex];
+					display.driveDisplay(ledString, 0.3);
 
 				}
 
-				e.setErrorCode(errorIndex, 0);
-				delete e.errorVec.front();
-				e.errorVec.pop();
+			}
 
-				errorcount++;
-                     	}
-                }
+			delete e.errorVec.front();
+			e.errorVec.pop();
+
+			errorcount++;
+		}
 
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
                 exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);

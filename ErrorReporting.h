@@ -45,10 +45,8 @@ class ErrorReporting{
 		int* sampleIndex;
 	public:
 		ErrorReporting(int* samplePointer, int* sampleIndexPointer);
-		int getErrorCode(int errorIndex) const;
 		int getCurrentErrorCodeIndex() const;
 		void  setNextErrorCode(int errorCode, float frequency);
-		int findErrorCode(int errorCode) const;
 		static int generateErrorCode(int testType, int problemDetail, int location, int problemType);
 		static std::string generateErrorMessage(int errorCode);
 
@@ -57,7 +55,6 @@ class ErrorReporting{
 		static std::string getCoilTerminalName(int location);
 		static std::string getCoilName(int location);
 
-		void setErrorCode(int errorCodeI, int errorCode);
 		void setGpioHistory(int errorID);
 		void printGpioHistory(int errorID);
 		std::queue<ErrorInfo*> errorVec;

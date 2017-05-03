@@ -141,6 +141,10 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 
 }
 
+int ErrorInfo::getErrorCode(){
+	return errorCode;
+}
+
 void ErrorInfo::dumpToFile(const char* filename){
 
 	std::ofstream myfile;

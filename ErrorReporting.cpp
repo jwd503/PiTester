@@ -6,34 +6,10 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer):
 	gpioHistory{0}{
 	sample = samplePointer;
 	sampleIndex = sampleIndexPointer;
-//	errorVec.reserve(MAX_ERROR_CODES);
-	int errorIndex = 0;
-	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
-		errorCodes[errorIndex] = 0;
-	//	errorVec[errorIndex] = 0;
-	}
 	currentErrorCodeIndex = 0;
 }
 
-int ErrorReporting::getErrorCode(int errorIndex) const{
-	if(errorIndex < MAX_ERROR_CODES){
-		return errorCodes[errorIndex];
-	}
-	return 0;
-}
-
-void ErrorReporting::setErrorCode(int errorCodeI, int errorCode){
-	errorCodes[errorCodeI] = errorCode;
-}
-
 void ErrorReporting::setNextErrorCode(int errorCode, float frequency){
-	//int errorCodeIndex = 0;
-	//for(errorCodeIndex= 0; errorCodeIndex < MAX_ERROR_CODES; errorCodeIndex++){
-	//	if (errorCodes[errorCodeIndex] == errorCode){
-	//		return;
-	//	}
-	//}
-	errorCodes[currentErrorCodeIndex] = errorCode;
 	setGpioHistory(currentErrorCodeIndex);
 	errorVec.push(new ErrorInfo(sample, *sampleIndex, errorCode, frequency));
 	incrementErrorCodeIndex();
@@ -44,21 +20,6 @@ void ErrorReporting::incrementErrorCodeIndex(){
 	if (currentErrorCodeIndex >= MAX_ERROR_CODES){
 		currentErrorCodeIndex = 0;
 	}
-}
-
-int ErrorReporting::findErrorCode(int errorCode) const{
-	int errorIndex = 0;
-	int found = 0;
-	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
-		if(errorCodes[errorIndex] == errorCode){
-			found = 1;
-			break;
-		}
-	}
-	if(found != 1){
-		errorIndex = -1;
-	}
-	return errorIndex;
 }
 
 int ErrorReporting::generateErrorCode(int testType, int problemDetail, int location, int problemType){
