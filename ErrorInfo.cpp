@@ -43,6 +43,12 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 		case MISSING_COMPONENT:
 			ledOut.at(0) = "NA  ";
 			break;
+		case COIL_TO_COIL:
+			ledOut.at(0) = "C2C ";
+			break;
+		case COIL_SHORT_TO_SELF:
+			ledOut.at(0) = "CSC ";
+			break;
 	}
 	switch(problemDetail){
 		case PIN_LEVEL:
@@ -130,12 +136,107 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 			break;
 		case MOTOR_LEVEL:
 			ledOut.at(1) = "MOTO";
+			switch(location){
+				case 0:
+					ledOut.at(2) = "   0";
+					break;
+				case 1:
+					ledOut.at(2) = "   1";
+					break;
+				case 2:
+					ledOut.at(2) = "   2";
+					break;
+				case 3:
+					ledOut.at(2) = "   3";
+					break;
+
+			}
 			break;
 		case COIL_LEVEL:
 			ledOut.at(1) = "coil";
+
+			switch(location){
+				case 0:
+					ledOut.at(2) = "nn0A";
+					break;
+				case 1:
+					ledOut.at(2) = "nn0B";
+					break;
+				case 2:
+					ledOut.at(2) = "nn1A";
+					break;
+				case 3:
+					ledOut.at(2) = "nn1B";
+					break;
+				case 4:
+					ledOut.at(2) = "nn2A";
+					break;
+				case 5:
+					ledOut.at(2) = "nn2B";
+					break;
+				case 6:
+					ledOut.at(2) = "nn3A";
+					break;
+				case 7:
+					ledOut.at(2) = "nn3B";
+					break;
+			}
+
 			break;
 		case COIL_TERMINAL_LEVEL:
 			ledOut.at(1) = "coil";
+
+			switch(location){
+				case 0:
+					ledOut.at(2) = " 0A1";
+					break;
+				case 1:
+					ledOut.at(2) = " 0A2";
+					break;
+				case 2:
+					ledOut.at(2) = " 0B1";
+					break;
+				case 3:
+					ledOut.at(2) = " 0B2";
+					break;
+				case 4:
+					ledOut.at(2) = " 1A1";
+					break;
+				case 5:
+					ledOut.at(2) = " 1A2";
+					break;
+				case 6:
+					ledOut.at(2) = " 1B1";
+					break;
+				case 7:
+					ledOut.at(2) = " 1B2";
+					break;
+				case 8:
+					ledOut.at(2) = " 2A1";
+					break;
+				case 9:
+					ledOut.at(2) = " 2A2";
+					break;
+				case 10:
+					ledOut.at(2) = " 2B1";
+					break;
+				case 11:
+					ledOut.at(2) = " 2B2";
+					break;
+				case 12:
+					ledOut.at(2) = " 3A1";
+					break;
+				case 13:
+					ledOut.at(2) = " 3A2";
+					break;
+				case 14:
+					ledOut.at(2) = " 3B1";
+					break;
+				case 15:
+					ledOut.at(2) = " 3B2";
+					break;
+			}
+
 			break;
 	}
 
