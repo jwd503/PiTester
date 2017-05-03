@@ -138,17 +138,17 @@ int runDynamicTest(int readmask){
 		for(unsigned char errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 			int errorCode = e.getErrorCode(errorIndex);
 			if (errorCode != 0){
-				if(e.errorVec[errorIndex] != 0){
+				if(!e.errorVec.empty()){
 
-					if((e.errorVec[errorIndex]->frequency > 30)){
+					if((e.errorVec.front()->frequency > 30)){
 						printf("sampleIndex: %d\n", sampleIndex);
 						printf(e.generateErrorMessage(errorCode).c_str());
 						printf("\nerrorCode: %x\n",errorCode);
 						flashLED(100000, 0);
 					}
 					e.setErrorCode(errorIndex, 0);
-					delete e.errorVec[errorIndex];
-					e.errorVec[errorIndex] = 0;
+					delete e.errorVec.front();
+					e.errorVec.pop();
 				}
 
 			}
@@ -402,9 +402,6 @@ int runStaticTest(){
 		for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 	        	int errorCode = e.getErrorCode(errorIndex);
        		        if (errorCode != 0){
-	       	               	e.setErrorCode(errorIndex, 0);
-				delete e.errorVec[errorIndex];
-				e.errorVec[errorIndex] = 0;
 
 				bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
 
@@ -425,75 +422,23 @@ int runStaticTest(){
 
 		                        printf("\nerrorCode: %x\n",errorCode);
 
-					delayMicroseconds(100);
-					std::string s = "";
-					for(int i = 0; i < 4; i++){
-						int mask = 0xf << (i*4);
-						int value = (errorCode & mask) >> (i*4);
-						switch(value){
-							case 0:
-								s = "0" + s;
-								break;
-							case 1:
-								s = "1" + s;
-								break;
-							case 2:
-								s = "2" + s;
-								break;
-							case 3:
-								s = "3" + s;
-								break;
-							case 4:
-								s = "4" + s;
-								break;
-							case 5:
-								s = "5" + s;
-								break;
-							case 6:
-								s = "6" + s;
-								break;
-							case 7:
-								s = "7" + s;
-								break;
-							case 8:
-								s = "8" + s;
-								break;
-							case 9:
-								s = "9" + s;
-								break;
-							case 10:
-								s = "A" + s;
-								break;
-							case 11:
-								s = "B" + s;
-								break;
-							case 12:
-								s = "C" + s;
-								break;
-							case 13:
-								s = "D" + s;
-								break;
-							case 14:
-								s = "E" + s;
-								break;
-							case 15:
-								s = "F" + s;
-								break;
-
-
-						}
-					}
 					flashLED(100000, 0);
-					display.driveDisplay(s, 0.5);
+					ErrorInfo &eRef = *e.errorVec.front();
+					for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
+						std::string ledString = eRef.ledOut[messageIndex];
+						display.driveDisplay(ledString, 0.3);
 
-//					errorsPresent = 1;
+					}
+
 				}
+
+				e.setErrorCode(errorIndex, 0);
+				delete e.errorVec.front();
+				e.errorVec.pop();
+
 				errorcount++;
                      	}
                 }
-		if(errorcount != 0){
-//			printf("ErrorCodeCount:%d\n", errorcount);
-		}
 
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
                 exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
@@ -512,7 +457,6 @@ void takeReadings(int nReads, int ReadResult[], int readmask){
 
 	int readcount = 0;
 	for(readcount = 0; readcount < nReads; readcount++){
-
 		ReadResult[readcount] = GPIO_READMULT(readmask);
 	}
 }

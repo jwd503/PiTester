@@ -6,11 +6,11 @@ ErrorReporting::ErrorReporting(int* samplePointer, int* sampleIndexPointer):
 	gpioHistory{0}{
 	sample = samplePointer;
 	sampleIndex = sampleIndexPointer;
-	errorVec.reserve(MAX_ERROR_CODES);
+//	errorVec.reserve(MAX_ERROR_CODES);
 	int errorIndex = 0;
 	for(errorIndex = 0; errorIndex < MAX_ERROR_CODES; errorIndex++){
 		errorCodes[errorIndex] = 0;
-		errorVec[errorIndex] = 0;
+	//	errorVec[errorIndex] = 0;
 	}
 	currentErrorCodeIndex = 0;
 }
@@ -35,8 +35,8 @@ void ErrorReporting::setNextErrorCode(int errorCode, float frequency){
 	//}
 	errorCodes[currentErrorCodeIndex] = errorCode;
 	setGpioHistory(currentErrorCodeIndex);
+	errorVec.push(new ErrorInfo(sample, *sampleIndex, errorCode, frequency));
 	incrementErrorCodeIndex();
-	errorVec[currentErrorCodeIndex] = new ErrorInfo(sample, *sampleIndex, errorCode, frequency);
 }
 
 void ErrorReporting::incrementErrorCodeIndex(){

@@ -3,7 +3,7 @@
 
 #include "ErrorInfo.h"
 #include <string>
-
+#include <queue>
 #define MAX_ERROR_CODES 32
 #define HISTORY_ITEMS 50
 
@@ -29,18 +29,17 @@
 #define M3B 7
 
 //Problem type
-#define ELECTRICAL_SHORT 1
-#define MISSING_COMPONENT 2
-#define COIL_SHORT_TO_SELF 3
-#define COIL_TO_COIL 4
-#define OPEN_CIRCUIT 5
+//#define ELECTRICAL_SHORT 1
+//#define MISSING_COMPONENT 2
+//#define COIL_SHORT_TO_SELF 3
+//#define COIL_TO_COIL 4
+//#define OPEN_CIRCUIT 5
 
 class ErrorReporting{
 	private:
 		int errorCodes[MAX_ERROR_CODES];
 		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
 
-		int currentErrorCodeIndex;
 		void incrementErrorCodeIndex();
 		int* sample;
 		int* sampleIndex;
@@ -61,7 +60,8 @@ class ErrorReporting{
 		void setErrorCode(int errorCodeI, int errorCode);
 		void setGpioHistory(int errorID);
 		void printGpioHistory(int errorID);
-		std::vector<ErrorInfo*> errorVec;
+		std::queue<ErrorInfo*> errorVec;
+		int currentErrorCodeIndex;
 
 };
 
