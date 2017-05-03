@@ -30,6 +30,9 @@ int checkButtons();
 int runDynamicTest(int readmask);
 int runStaticTest();
 int runOptoTest();
+
+void displayErrors(ErrorReporting* e, LEDDriver* display);
+
 int main()
 {
 	//Map the virtual address to the physical pi registers
@@ -136,12 +139,8 @@ int runDynamicTest(int readmask){
 		}
 
 		for(unsigned char errorIndex = 0; errorIndex < e.errorVec.size(); errorIndex++){
-			int errorCode = e.errorVec.front()->getErrorCode();
 			if((e.errorVec.front()->frequency > 30)){
-				printf("sampleIndex: %d\n", sampleIndex);
-				printf(e.generateErrorMessage(errorCode).c_str());
-				printf("\nerrorCode: %x\n",errorCode);
-				flashLED(100000, 0);
+				displayErrors(&e, &display);
 			}
 			delete e.errorVec.front();
 			e.errorVec.pop();
@@ -390,10 +389,18 @@ int runStaticTest(){
 			}
 		}
 
+		int exitRead = GPIO_READMULT(0xFFFFFFC);
+                exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
+                if(exitRead  != 0){
+                        exitCondition = flashLED(0,1000);
+                        if(exitCondition != 0){
+                                return exitCondition;
+                        }
+                }
 
 		int errorcount = 0;
 		for(unsigned int errorIndex = 0; errorIndex < e.errorVec.size(); errorIndex++){
-	        	int errorCode = e.errorVec.front()->getErrorCode();
+			int errorCode = e.errorVec.front()->getErrorCode();
 			bool isMissing = (errorCode & 0xF) == MISSING_COMPONENT;
 
 			if (isMissing){
@@ -409,17 +416,7 @@ int runStaticTest(){
 			}
 
 			if (missingFlag || !isMissing){
-	   			printf(e.generateErrorMessage(errorCode).c_str());
-	                        printf("\nerrorCode: %x\n",errorCode);
-
-				flashLED(100000, 0);
-				ErrorInfo &eRef = *e.errorVec.front();
-				for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
-					std::string ledString = eRef.ledOut[messageIndex];
-					display.driveDisplay(ledString, 0.3);
-
-				}
-
+				displayErrors(&e, &display);
 			}
 
 			delete e.errorVec.front();
@@ -427,15 +424,6 @@ int runStaticTest(){
 
 			errorcount++;
 		}
-
-		int exitRead = GPIO_READMULT(0xFFFFFFC);
-                exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
-                if(exitRead  != 0){
-                        exitCondition = flashLED(0,1000);
-                        if(exitCondition != 0){
-                                return exitCondition;
-                        }
-                }
 
 	}
 	return 0;
@@ -546,4 +534,19 @@ int checkButtons(){
 			break;
 	}
 	return returnValue;
+}
+
+void displayErrors(ErrorReporting* e, LEDDriver* display){
+
+	int errorCode = e->errorVec.front()->getErrorCode();
+	printf(e->generateErrorMessage(errorCode).c_str());
+	printf("\nerrorCode: %x\n",errorCode);
+
+	flashLED(100000, 0);
+	ErrorInfo &eRef = *e->errorVec.front();
+	for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
+		std::string ledString = eRef.ledOut[messageIndex];
+		display->driveDisplay(ledString, 0.5);
+	}
+
 }
