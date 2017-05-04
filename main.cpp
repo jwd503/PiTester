@@ -546,7 +546,7 @@ void displayErrors(ErrorReporting* e, LEDDriver* display){
 	ErrorInfo &eRef = *e->errorVec.front();
 	for(unsigned int messageIndex = 0; messageIndex < eRef.ledOut.size(); messageIndex++){
 		std::string ledString = eRef.ledOut[messageIndex];
-		display->driveDisplay(ledString, 0.5);
+		display->driveDisplay(ledString, 1.0);
 	}
 
 }
