@@ -37,7 +37,6 @@
 
 class ErrorReporting{
 	private:
-		int errorCodes[MAX_ERROR_CODES];
 		int gpioHistory[HISTORY_ITEMS*MAX_ERROR_CODES];
 
 		void incrementErrorCodeIndex();
