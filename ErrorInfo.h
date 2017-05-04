@@ -19,10 +19,16 @@ class ErrorInfo{
 		std::vector<int> *sampleSnapshot;
 		int errorIndex;
 		int errorCode;
+		static const std::string pType[];
+		static const std::string pinLocation[];
+		static const std::string coilLocation[];
+		static const std::string coilTerminalLocation[];
+		static const std::string motorLocation[];
 
 	public:
 		ErrorInfo(int* samples, int eIndex, int eCode, float frequency);
 		~ErrorInfo();
+		void generateLEDOut();
 
 		std::vector<std::string> ledOut;
 		void dumpToFile(const char* filename);

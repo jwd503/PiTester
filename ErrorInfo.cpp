@@ -6,6 +6,34 @@
 
 #define MICROSECONDS 1000000.0
 
+const std::string ErrorInfo::pType[] = {
+	"",     "SC  ", "NA  ","CSC ",
+	"C2C ", "OC  "
+};
+const std::string ErrorInfo::pinLocation[] = {
+	"", 	"", 	"DB14", "DB15",
+	"DB1 ", "DB22", "DB19",	"DB13",
+	"DB12", "DB20",	"DB23", "DB21",
+	"DB2 ",	"DB24", "DB4 ", "DB5 ",
+	"DB3 ", "DB16", "DB6 ", "DB25",
+	"DB7 ", "DB10", "DB18", "DB8 ",
+	"DB9 ", "DB11", "DB26", "DB17"
+};
+const std::string ErrorInfo::coilLocation[] = {
+	"nn0A", "nn0B", "nn1A", "nn1B",
+	"nn2A", "nn2B", "nn3A", "nn3B"
+};
+const std::string ErrorInfo::coilTerminalLocation[]  = {
+	" 0A1", " 0A2", " 0B1", " 0B2",
+	" 1A1", " 1A2", " 1B1", " 1B2",
+	" 2A1", " 2A2", " 2B1", " 2B2",
+	" 3A1", " 3A2", " 3B1", " 3B2"
+};
+const std::string ErrorInfo::motorLocation[] = {
+	"   0", "   1", "   2", "   3"
+};
+
+
 ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 	//Take a snapshot of the last 10k samples before the error occured
 	sampleSnapshot =  new std::vector<int>;
@@ -25,7 +53,10 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 	if (frequency > 69){
 		dumpToFile(filename.c_str());
 	}
+	generateLEDOut();
+}
 
+void ErrorInfo::generateLEDOut(){
 	int problemDetail = (errorCode & (0xF << 10)) >> 10;
 	int location = (errorCode & (0x3F << 4)) >> 4;
 	int problemType = errorCode & 0xF;
@@ -33,210 +64,25 @@ ErrorInfo::ErrorInfo(int* samples, int eIndex, int eCode, float frequency){
 	ledOut.push_back("cant");
 	ledOut.push_back("find");
 	ledOut.push_back("location");
-	switch(problemType){
-		case ELECTRICAL_SHORT:
-			ledOut.at(0) = "SC  ";
-			break;
-		case OPEN_CIRCUIT:
-			ledOut.at(0) = "OC  ";
-			break;
-		case MISSING_COMPONENT:
-			ledOut.at(0) = "NA  ";
-			break;
-		case COIL_TO_COIL:
-			ledOut.at(0) = "C2C ";
-			break;
-		case COIL_SHORT_TO_SELF:
-			ledOut.at(0) = "CSC ";
-			break;
-	}
+
+	ledOut.at(0) = pType[problemType];
 	switch(problemDetail){
 		case PIN_LEVEL:
 			ledOut.at(1) = "Pin ";
-			switch(location){
-				case 2:
-					ledOut.at(2) = "DB14";
-					break;
-				case 3:
-					ledOut.at(2) = "DB15  ";
-					break;
-				case 4:
-					ledOut.at(2) = "DB1   ";
-					break;
-				case 5:
-					ledOut.at(2) = "DB22  ";
-					break;
-				case 6:
-					ledOut.at(2) = "DB19  ";
-					break;
-				case 7:
-					ledOut.at(2) = "DB13  ";
-					break;
-				case 8:
-					ledOut.at(2) = "DB12  ";
-					break;
-				case 9:
-					ledOut.at(2) = "DB20  ";
-					break;
-				case 10:
-					ledOut.at(2) = "DB23  ";
-					break;
-				case 11:
-					ledOut.at(2) = "DB21  ";
-					break;
-				case 12:
-					ledOut.at(2) = "DB2   ";
-					break;
-				case 13:
-					ledOut.at(2) = "DB24  ";
-					break;
-				case 14:
-					ledOut.at(2) = "DB4   ";
-					break;
-				case 15:
-					ledOut.at(2) = "DB5   ";
-					break;
-				case 16:
-					ledOut.at(2) = "DB3   ";
-					break;
-				case 17:
-					ledOut.at(2) = "DB16  ";
-					break;
-				case 18:
-					ledOut.at(2) = "DB6   ";
-					break;
-				case 19:
-					ledOut.at(2) = "DB25  ";
-					break;
-				case 20:
-					ledOut.at(2) = "DB7   ";
-					break;
-				case 21:
-					ledOut.at(2) = "DB10  ";
-					break;
-				case 22:
-					ledOut.at(2) = "DB18  ";
-					break;
-				case 23:
-					ledOut.at(2) = "DB8   ";
-					break;
-				case 24:
-					ledOut.at(2) = "DB9   ";
-					break;
-				case 25:
-					ledOut.at(2) = "DB11  ";
-					break;
-				case 26:
-					ledOut.at(2) = "DB26  ";
-					break;
-				case 27:
-					ledOut.at(2) = "DB17  ";
-					break;
-			}
+			ledOut.at(2) = pinLocation[location];
 			break;
 		case MOTOR_LEVEL:
 			ledOut.at(1) = "MOTO";
-			switch(location){
-				case 0:
-					ledOut.at(2) = "   0";
-					break;
-				case 1:
-					ledOut.at(2) = "   1";
-					break;
-				case 2:
-					ledOut.at(2) = "   2";
-					break;
-				case 3:
-					ledOut.at(2) = "   3";
-					break;
-
-			}
+			ledOut.at(2) = motorLocation[location];
 			break;
 		case COIL_LEVEL:
 			ledOut.at(1) = "coil";
-
-			switch(location){
-				case 0:
-					ledOut.at(2) = "nn0A";
-					break;
-				case 1:
-					ledOut.at(2) = "nn0B";
-					break;
-				case 2:
-					ledOut.at(2) = "nn1A";
-					break;
-				case 3:
-					ledOut.at(2) = "nn1B";
-					break;
-				case 4:
-					ledOut.at(2) = "nn2A";
-					break;
-				case 5:
-					ledOut.at(2) = "nn2B";
-					break;
-				case 6:
-					ledOut.at(2) = "nn3A";
-					break;
-				case 7:
-					ledOut.at(2) = "nn3B";
-					break;
-			}
-
+			ledOut.at(2) = coilLocation[location];
 			break;
+
 		case COIL_TERMINAL_LEVEL:
 			ledOut.at(1) = "coil";
-
-			switch(location){
-				case 0:
-					ledOut.at(2) = " 0A1";
-					break;
-				case 1:
-					ledOut.at(2) = " 0A2";
-					break;
-				case 2:
-					ledOut.at(2) = " 0B1";
-					break;
-				case 3:
-					ledOut.at(2) = " 0B2";
-					break;
-				case 4:
-					ledOut.at(2) = " 1A1";
-					break;
-				case 5:
-					ledOut.at(2) = " 1A2";
-					break;
-				case 6:
-					ledOut.at(2) = " 1B1";
-					break;
-				case 7:
-					ledOut.at(2) = " 1B2";
-					break;
-				case 8:
-					ledOut.at(2) = " 2A1";
-					break;
-				case 9:
-					ledOut.at(2) = " 2A2";
-					break;
-				case 10:
-					ledOut.at(2) = " 2B1";
-					break;
-				case 11:
-					ledOut.at(2) = " 2B2";
-					break;
-				case 12:
-					ledOut.at(2) = " 3A1";
-					break;
-				case 13:
-					ledOut.at(2) = " 3A2";
-					break;
-				case 14:
-					ledOut.at(2) = " 3B1";
-					break;
-				case 15:
-					ledOut.at(2) = " 3B2";
-					break;
-			}
-
+			ledOut.at(2) = coilTerminalLocation[location];
 			break;
 	}
 
