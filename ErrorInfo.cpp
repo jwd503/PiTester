@@ -60,29 +60,25 @@ void ErrorInfo::generateLEDOut(){
 	int problemDetail = (errorCode & (0xF << 10)) >> 10;
 	int location = (errorCode & (0x3F << 4)) >> 4;
 	int problemType = errorCode & 0xF;
-	ledOut.reserve(3);
-	ledOut.push_back("cant");
-	ledOut.push_back("find");
-	ledOut.push_back("location");
 
-	ledOut.at(0) = pType[problemType];
+	ledOut.push_back(pType[problemType]); //position 0
 	switch(problemDetail){
 		case PIN_LEVEL:
-			ledOut.at(1) = "Pin ";
-			ledOut.at(2) = pinLocation[location];
+			ledOut.push_back("Pin ");//position 1
+			ledOut.push_back(pinLocation[location]);//position 2
 			break;
 		case MOTOR_LEVEL:
-			ledOut.at(1) = "MOTO";
-			ledOut.at(2) = motorLocation[location];
+			ledOut.push_back("MOTO");//position 1
+			ledOut.push_back(motorLocation[location]);//position 2
 			break;
 		case COIL_LEVEL:
-			ledOut.at(1) = "coil";
-			ledOut.at(2) = coilLocation[location];
+			ledOut.push_back("coil");//position 1
+			ledOut.push_back(coilLocation[location]);//position 2
 			break;
 
 		case COIL_TERMINAL_LEVEL:
-			ledOut.at(1) = "coil";
-			ledOut.at(2) = coilTerminalLocation[location];
+			ledOut.push_back("coil");//position 1
+			ledOut.push_back(coilTerminalLocation[location]);//position 2
 			break;
 	}
 
