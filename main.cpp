@@ -116,7 +116,6 @@ int runDynamicTest(int readmask){
 	ErrorReporting e = ErrorReporting(sample, &sampleIndex);
 	std::vector<Motor> *motors = configureMotors(&e);
 	std::vector<Motor> &motor = *motors;
-	//unsigned int pinTime[32] = {0};
 	int exitCondition = 0;
 	OUT_GPIO(6);
 	printf("%d motors to check\n", motor.size());
@@ -152,7 +151,7 @@ int runDynamicTest(int readmask){
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
 		if(exitRead  != 0){
-			exitCondition = flashLED(0,1000);//checkButtons();
+			exitCondition = flashLED(0,1000);
 			if(exitCondition != 0){
 				INP_GPIO(6);
 				return exitCondition;
@@ -227,7 +226,7 @@ int runOptoTest(){
 		int exitRead = GPIO_READMULT(0xFFFFFFC);
 		exitRead &= (1<<9)|(1<<18)|(1<<23)|(1<<26);
 		if(exitRead  != 0){
-			exitCondition = flashLED(0,1000);//checkButtons();
+			exitCondition = flashLED(0,1000);
 			if(exitCondition != 0){
 				setPullDown();
 				return exitCondition;
@@ -310,7 +309,7 @@ int runStaticTest(){
 			int checkNext = 0;
 			int coilPins[4];
 			int* tempCoilPins = motor[motorIndex].getCoilTracker(0)->getCoil()->getPins();
-//			printf("%d, %d\n",tempCoilPins[0], tempCoilPins[1]);
+
 			coilPins[0] = tempCoilPins[0];
 			coilPins[1] = tempCoilPins[1];
 
@@ -342,15 +341,12 @@ int runStaticTest(){
 					}
                         	}else{
 	                        	retryCount = 0;
-//					printf("Read ok\n");
 				}
 
 			}
 			if(checkNext == 0){
-//				printf("Checking\n");
 				motorFlag += motor[motorIndex].testMotor(readArray[0], coilPins[0], readArray[1], coilPins[1], readArray[2], coilPins[2], readArray[3], coilPins[3]);
         	               	if (motorFlag != 0){
-				//	int exitCode = flashLED(100000, 0);
 					motorFlag = 0;
 				}
 
@@ -502,12 +498,10 @@ int checkButtons(){
 	while(1){
 		int readResult = GPIO_READMULT(pinMask);
 		if(readResult!= 0){
-//			printf("Something detected %x\n", readResult);
 			delayMicroseconds(5000);
 			readResult = GPIO_READMULT(pinMask);
 			if(readResult != 0){
 				storedResult = readResult;
-//				printf("Something detected after 5 ms %x\n",readResult);
 				do {
 					readResult= GPIO_READMULT(pinMask);
 					delayMicroseconds(100);

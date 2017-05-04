@@ -99,7 +99,6 @@ int Motor::updateCoils(int gpioReading){
 				errorFlag = 1;
 				int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[1].getCoil()->location, COIL_SHORT_TO_SELF);
 				e->setNextErrorCode(errorCode, frequency);
-//				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[0].getCoil()->name.c_str(), lastFiredCount, coilTracker[1].getCoil()->name.c_str());
 			}
 
 		}else{
@@ -124,7 +123,6 @@ int Motor::updateCoils(int gpioReading){
 				errorFlag = 2;
 				int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coilTracker[0].getCoil()->location, COIL_SHORT_TO_SELF);
 				e->setNextErrorCode(errorCode, frequency);
-//				printf("Coil: %s has fired %d times in a row, possible short on coil: %s\n", coilTracker[1].getCoil()->name.c_str(), lastFiredCount, coilTracker[0].getCoil()->name.c_str());
 			}
 
 		}else{
@@ -169,10 +167,6 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 		counter++;
 	}
 	counter *= 2;
-//	for(int pinIndex = 0; pinIndex < 4; pinIndex++){
-//	}
-
-
 
 	if((pinResult[0] == counter) && (pinResult[1] == counter) && (pinResult[2] == counter) && (pinResult[3] == counter)){
 		// All of the coils were missing
@@ -204,12 +198,10 @@ int Motor::testMotor(int coilA1Reading[], int pin1, int coilA2Reading[], int pin
 int Motor::compareOne(int value, Coil* testCoil, int pin){
 	int* coilPins = testCoil->getPins();
 	int expectedResults = (1 << coilPins[0]) | (1 << coilPins[1]);
-//	printf("observed: %d, expected: %d\n", (readResult[id] & ~(1 << 6)) ,(expectedResult  & ~(1 << 6)));
 	int mask = ~(1<<6);
 	if ((value & mask) == (expectedResults  & mask)){
 		return 0;
 	} else{
-//		printf("observed: %d, expected: %d, pin: %d\n", (value & ~(1 << 6)) ,(expectedResults  & ~(1 << 6)), pin);
 
 		if (value == (1 << pin)){
 			//Potentially open circuit
@@ -251,8 +243,6 @@ void Motor::updateState(int gpioReading){
 				//reset the timers for the currentState
 				motorTiming[currentState].frequency = 0;
 				gettimeofday(&motorTiming[currentState].start, NULL);
-//				float sum = motorTiming[4].frequency + motorTiming[1].frequency + motorTiming[2].frequency + motorTiming[3].frequency;
-//				float avg = sum/4.0;
 				frequency = 0;
 			}
 			//Update currentState

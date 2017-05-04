@@ -22,13 +22,6 @@ int CoilTracker::updateCoil(int gpioReading){
 		states.incrementIndex();
 		states.setCurrentValue(coilState);
 
-//		if(0x1 & coilState && ((0x1 & states[states.getPreviousWindowIndex()]) == 0)) {
-//			storedPinCount[0] = pinCount[0];
-//			pinCount[0] = 1;
-//		}
-//		if(0x2 & coilState && ((0x2 & prevCoilState) == 0)) {
-//			storedPinCount[1] = pinCount[1];
-//		}
 	}else{
 		window.incrementCurrentValue();
 
@@ -37,11 +30,9 @@ int CoilTracker::updateCoil(int gpioReading){
 			window.setCurrentValue(0);
 		}
 	}
-//	prevCoilState = coilState;
 	if (coil.inValidState() == 0){
 		int errorCode = e->generateErrorCode(DYNAMIC_TEST, COIL_LEVEL, coil.location, COIL_TO_COIL);
 		e->setNextErrorCode(errorCode, frequency);
-//		printf("There is probably something wrong with coil: %s, state:%d\n",coil.name.c_str(), coil.getCoilState());
 	}
 	return coilStateChanged;
 

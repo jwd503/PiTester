@@ -15,9 +15,6 @@ int TestCase::compareAll(){
 	//Skip the first result as signal propagation errors show up here
 	for(i = 8; i < NREADS; i++){
 		int tempResult = compareOne(i);
-		if(tempResult != 0){
-//			printf("Read no:%d\n", i);
-		}
 		result |= tempResult;
 	}
 	int pin = outputMask & ~(1<<6);
@@ -42,14 +39,12 @@ int TestCase::compareAll(){
 	if(((result & 0x1) != 0) && pinFound) { //Short circuit
 		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, ELECTRICAL_SHORT);
 		e->setNextErrorCode(errorCode, 100.0);
-		printf("pinCounter: %d\n",pinCounter);
 
 	}
 
 	if(((result & 0x2) != 0) && pinFound) { //Open circuit
 		int errorCode = e->generateErrorCode(STATIC_TEST, PIN_LEVEL, pinCounter, OPEN_CIRCUIT); //Change to OC code
 		e->setNextErrorCode(errorCode, 100.0);
-		printf("pinCounter: %d\n",pinCounter);
 
 	}
 

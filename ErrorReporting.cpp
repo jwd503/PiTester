@@ -49,7 +49,6 @@ std::string ErrorReporting::generateErrorMessage(int errorCode){
 
 	}
 	std::string problemDetailString = "";
-//	printf("Problem detail: %d\n", problemDetail);
 	std::string t = "Pin ";
 	char numstr[21]; // enough to hold all numbers up to 64-bits
 	sprintf(numstr, "%d", location);
@@ -59,7 +58,7 @@ std::string ErrorReporting::generateErrorMessage(int errorCode){
 		case 0x0: //No detail
 			break;
 		case 0x1: //Pin level
-			problemDetailString = t;//getPinName(location);
+			problemDetailString = t;
 			break;
 		case 0x2: //Coil terminal level
 			problemDetailString = getCoilTerminalName(location);

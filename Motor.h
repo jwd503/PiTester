@@ -61,12 +61,6 @@ class Motor{
 			{ STATE_IDLE,	STATE_THREE,	IN_THREE},
 			{ STATE_IDLE,	STATE_FOUR,	IN_FOUR	},
 
-			// Input is the same so stay in current state
-//			{ STATE_ONE,	STATE_ONE,	IN_ONE	},
-//			{ STATE_TWO,	STATE_TWO,	IN_TWO	},
-//			{ STATE_THREE,	STATE_THREE,	IN_THREE},
-//			{ STATE_FOUR,	STATE_FOUR,	IN_FOUR },
-
 			// Motor rotations
 			{ STATE_FOUR,	STATE_ONE,	IN_ONE	},
 			{ STATE_ONE,	STATE_THREE,	IN_THREE},

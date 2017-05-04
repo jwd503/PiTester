@@ -11,7 +11,6 @@ Coil::Coil(int pin1, int pin2, const std::string name, int location1, ErrorRepor
 	pins[1] = pin2;
 	coilState = 0;
 	previousCoilState = 0;
-//	this->name = name;
 	e = errorPointer;
 	location = location1;
 
@@ -51,7 +50,6 @@ int Coil::getExpectedMask(int pin) const{
 		//Pin was found so return the mask corresponding with that pin
 		mask = 1 << otherPin;
 	}
-//	printf("input pin: %d, returned pin: %d, mask:%d\n", pin, otherPin, mask);
 
 	return mask;
 }
